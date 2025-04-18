@@ -1,0 +1,49 @@
+<!-- templates/admins/reports.html -->
+{% extends 'admins/base_admin.html' %}
+{% block title %}Informes Administrativos{% endblock %}
+{% block header %}Informes{% endblock %}
+{% block content %}
+<div class="space-y-8">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">Ingresos Última Semana</h2>
+        <canvas id="ingresosChart" class="w-full h-64"></canvas>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">Servicios por Tipo de Lavado</h2>
+        <canvas id="serviciosChart" class="w-full h-64"></canvas>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de ingresos
+    const ingresosCtx = document.getElementById('ingresosChart').getContext('2d');
+    new Chart(ingresosCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for ingreso in ingresos_por_dia %}"{{ ingreso.fecha_emision }}",{% endfor %}],
+            datasets: [{
+                label: 'Ingresos ($)',
+                data: [{% for ingreso in ingresos_por_dia %}{{ ingreso.total }},{% endfor %}],
+                borderColor: '#4F46E5',
+                fill: false,
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Gráfico de servicios
+    const serviciosCtx = document.getElementById('serviciosChart').getContext('2d');
+    new Chart(serviciosCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for servicio in servicios_por_tipo %}"{{ servicio.tipo_lavado__nombre }}",{% endfor %}],
+            datasets: [{
+                label: 'Cantidad',
+                data: [{% for servicio in servicios_por_tipo %}{{ servicio.total }},{% endfor %}],
+                backgroundColor: '#4F46E5',
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+{% endblock %}

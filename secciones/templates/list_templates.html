@@ -1,0 +1,95 @@
+<!-- secciones/list_template.html (actualización con modal) -->
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Lavado de Vehículos{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
+        <div class="text-center mb-6">
+            <div class="car-icon"></div>
+            <h2 class="text-2xl font-bold text-gray-800">{{ title }}</h2>
+            <p class="text-gray-500 text-sm">Lista de {{ title }}</p>
+        </div>
+
+        {% if object_list %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                <thead class="bg-blue-50">
+                    <tr>
+                        {% for field in fields %}
+                        <th class="px-4 py-2 border-b text-left text-gray-700 font-semibold">{{ field }}</th>
+                        {% endfor %}
+                        <th class="px-4 py-2 border-b text-left text-gray-700 font-semibold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in object_list %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        {% for value in item.get_fields %}
+                        <td class="px-4 py-2 border-b">{{ value }}</td>
+                        {% endfor %}
+                        <td class="px-4 py-2 border-b">
+                            <button onclick="openModal('modal-{{ item.id }}')" class="text-blue-600 hover:text-blue-800"><i class="fas fa-eye mr-2"></i> Ver</button>
+                        </td>
+                    </tr>
+                    <!-- Modal -->
+                    <div id="modal-{{ item.id }}" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center z-50">
+                        <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Detalles de {{ item }}</h3>
+                            <div class="space-y-4">
+                                {% for field, value in item.get_fields_detailed %}
+                                <div class="flex justify-between border-b py-2">
+                                    <span class="font-semibold text-gray-700">{{ field }}</span>
+                                    <span class="text-gray-600">{{ value }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-6 text-center">
+                                <button onclick="closeModal('modal-{{ item.id }}')" class="btn-primary text-white px-4 py-2 rounded-md">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <div class="mt-4 flex justify-center">
+            <nav aria-label="Page navigation">
+                <ul class="inline-flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">Anterior</a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <span class="px-3 py-1 bg-gray-200 text-gray-800 rounded-md">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                    <li>
+                        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="text-center text-gray-500">No hay {{ title|lower }} disponibles.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+</script>
+{% endblock %}

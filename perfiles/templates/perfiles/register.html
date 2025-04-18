@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Lavado de Vehículos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .water-effect {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(0deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(59, 130, 246, 0) 100%);
+            border-radius: 0 0 8px 8px;
+            z-index: 1;
+            opacity: 0.7;
+        }
+        
+        .bubble {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: float 3s infinite ease-in-out;
+        }
+        
+        .car-wash-container {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .water-drops {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.5;
+        }
+        
+        .form-container {
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        
+        .car-icon {
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .splash {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+        }
+
+        .form-section {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        @keyframes shine {
+            0% { background-position: -100% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .shiny-button {
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
+            background-size: 200% 100%;
+            animation: shine 3s infinite linear;
+        }
+
+        .progress-bar {
+            height: 6px;
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div class="car-wash-container w-full max-w-2xl rounded-lg shadow-xl p-2 overflow-hidden">
+        <div class="water-drops" id="water-drops"></div>
+        <div class="water-effect"></div>
+        
+        <div class="form-container p-6 rounded-lg shadow-lg">
+            <!-- Ícono y título -->
+            <div class="text-center mb-6 relative">
+                <div class="car-icon w-24 h-24 bg-blue-500 rounded-lg mx-auto mb-4 flex items-center justify-center text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                        <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                        <path d="M5 9l2 -4h8l2 4"></path>
+                        <path d="M5 9h12v5a3 3 0 0 1 -3 3h-6a3 3 0 0 1 -3 -3v-5z"></path>
+                        <path d="M5 9l-2 4h2"></path>
+                        <path d="M19 9l2 4h-2"></path>
+                    </svg>
+                    <div class="splash" id="splash"></div>
+                </div>
+                <h2 class="text-3xl font-bold text-blue-700 mb-1">Registro de Usuario</h2>
+                <p class="text-blue-500 text-md">Crea tu cuenta en AutoSplash</p>
+            </div>
+
+            <!-- Barra de progreso -->
+            <div class="progress-bar">
+                <div class="progress-bar-inner" id="progressBar"></div>
+            </div>
+
+            <!-- Mensajes de éxito o error -->
+            <div class="mb-4" id="messages">
+                <!-- Aquí irían los mensajes de Django -->
+            </div>
+
+            <!-- Formulario -->
+            <form method="post" id="registerForm">
+                {% csrf_token %}
+                <!-- Campo: Username -->
+                <div class="mb-4 form-section">
+                    <label for="id_username" class="block text-sm font-medium text-blue-700">Usuario</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" name="username" id="id_username"
+                               class="input-field block w-full pl-10 py-3 border border-blue-300 rounded-lg text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                               placeholder="Ingrese su nombre de usuario" required>
+                    </div>
+                    <p class="text-blue-400 text-xs mt-1">Requerido. 150 caracteres o menos. Solo letras, dígitos y @/./+/-/_.</p>
+                </div>
+
+                <!-- Campo: Email -->
+                <div class="mb-4 form-section">
+                    <label for="id_email" class="block text-sm font-medium text-blue-700">Correo Electrónico</label>
+                    <div class="relative mt-1">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                            </svg>
+                        </div>
+                        <input type="email" name="email" id="id_email"
+                               class="input-field block w-full pl-10 py-3 border border-blue-300 rounded-lg text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                               placeholder="correo@ejemplo.com" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Campo: First name -->
+                    <div class="mb-4 form-section">
+                        <label for="id_first_name" class="block text-sm font-medium text-blue-700">Nombre</label>
+                        <div class="relative mt-1">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="text" name="first_name" id="id_first_name"
+                                   class="input-field block w-full pl-10 py-3 border border-blue-300 rounded-lg text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                                   placeholder="Ingrese su nombre">
+                        </div>
+                    </div>
+
+                    <!-- Campo: Last name -->
+                    <div class="mb-4 form-section">
+                        <label for="id_last_name" class="block text-sm font-medium text-blue-700">Apellido</label>
+                        <div class="relative mt-1">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="text" name="last_name" id="id_last_name"
+                                   class="input-field block w-full pl-10 py-3 border border-blue-300 rounded-lg text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                                   placeholder="Ingrese su apellido">
+                        </div>
+                    </div>
+                </div>
+
+               
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Campo: Password1 -->
+                    <div class="mb-4 form-section">
+                        <label for="id_password1" class="block text-sm font-medium text-blue-700">Contraseña</label>
+                        <div class="relative mt-1">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="password" name="password1" id="id_password1"
+                                   class="input-field block w-full pl-10 py-3 border border-blue-300 rounded-lg text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                                   placeholder="Ingrese su contraseña" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <button type="button" class="toggle-password text-blue-500 hover:text-blue-700 focus:outline-none" data-target="id_password1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campo: Password2 -->
+                    <div class="mb-4 form-section">
+                        <label for="id_password2" class="block text-sm font-medium text-blue-700">Confirmar Contraseña</label>
+                        <div class="relative mt-1">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="password" name="password2" id="id_password2"
+                                   class="input-field block w-full pl-10 py-3 border border-blue-300 rounded-lg text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+                                   placeholder="Confirme su contraseña" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <button type="button" class="toggle-password text-blue-500 hover:text-blue-700 focus:outline-none" data-target="id_password2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-1 hidden" id="password-strength">
+                            <div class="flex items-center my-1">
+                                <div class="w-full h-2 bg-gray-200 rounded">
+                                    <div class="h-2 rounded bg-red-500" id="password-strength-meter" style="width: 0%"></div>
+                                </div>
+                                <span class="ml-2 text-xs font-medium text-gray-500" id="password-strength-text">Débil</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Términos y condiciones -->
+                <div class="mb-6 form-section">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="terms" type="checkbox" class="w-4 h-4 border border-blue-300 rounded bg-blue-50 focus:ring-3 focus:ring-blue-300" required>
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="terms" class="font-medium text-blue-700">Acepto los <a href="#" class="text-blue-600 hover:underline">términos y condiciones</a></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de registro -->
+                <button type="submit" id="registerButton" class="w-full shiny-button text-white py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md transition duration-300 transform hover:-translate-y-1 form-section">
+                    <span class="flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Crear Cuenta
+                    </span>
+                </button>
+            </form>
+
+            <!-- Enlace para iniciar sesión -->
+            <p class="mt-6 text-center text-blue-700 form-section">
+                ¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-800 transition duration-300">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Crear burbujas y gotas de agua
+        document.addEventListener('DOMContentLoaded', () => {
+            const waterDrops = document.getElementById('water-drops');
+            const formSections = document.querySelectorAll('.form-section');
+            const progressBar = document.getElementById('progressBar');
+            const passwordInput = document.getElementById('id_password1');
+            const passwordConfirm = document.getElementById('id_password2');
+            const passwordStrength = document.getElementById('password-strength');
+            const passwordStrengthMeter = document.getElementById('password-strength-meter');
+            const passwordStrengthText = document.getElementById('password-strength-text');
+            
+            // Animar elementos del formulario
+            let delay = 0.1;
+            formSections.forEach(section => {
+                gsap.to(section, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.5,
+                    delay: delay,
+                    ease: "power2.out"
+                });
+                delay += 0.1;
+            });
+            
+            // Actualizar barra de progreso
+            gsap.to(progressBar, {
+                width: "20%",
+                duration: 0.8,
+                ease: "power2.out"
+            });
+            
+            // Crear burbujas
+            for (let i = 0; i < 15; i++) {
+                createBubble();
+            }
+            
+            // Crear gotas de agua
+            for (let i = 0; i < 30; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'absolute bg-blue-300 rounded-full opacity-50';
+                
+                const size = Math.random() * 15 + 5;
+                drop.style.width = `${size}px`;
+                drop.style.height = `${size}px`;
+                drop.style.top = `${Math.random() * 100}%`;
+                drop.style.left = `${Math.random() * 100}%`;
+                
+                waterDrops.appendChild(drop);
+            }
+            
+            // Efecto de salpicadura al hacer clic en el icono
+            const carIcon = document.querySelector('.car-icon');
+            const splash = document.getElementById('splash');
+            
+            carIcon.addEventListener('click', () => {
+                gsap.to(splash, {
+                    scale: 1.5,
+                    opacity: 0,
+                    duration: 0.6,
+                    onComplete: () => {
+                        gsap.set(splash, { scale: 0, opacity: 1 });
+                    }
+                });
+            });
+            
+            // Mostrar/ocultar contraseña
+            const toggleButtons = document.querySelectorAll('.toggle-password');
+            
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    // Cambiar el icono
+                    const svg = button.querySelector('svg');
+                    if (type === 'text') {
+                        svg.innerHTML = `<path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />`;
+                    } else {
+                        svg.innerHTML = `<path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
+                                        <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />`;
+                    }
+                });
+            });
+            
+            // Animación de los campos de formulario
+            const inputs = document.querySelectorAll('.input-field');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    gsap.to(input, {
+                        scale: 1.02,
+                        duration: 0.2,
+                        ease: 'power1.out'
+                    });
+                    // Actualizar barra de progreso
+                    updateProgressBar();
+                });
+                
+              // Continuación del script donde se cortó
+              input.addEventListener('blur', () => {
+                gsap.to(input, {
+                    scale: 1,
+                    duration: 0.2,
+                    ease: 'power1.out'
+                });
+            });
+            
+            input.addEventListener('input', () => {
+                updateProgressBar();
+            });
+        });
+        
+        // Función para crear burbujas
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            const size = Math.random() * 20 + 10;
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            bubble.style.bottom = `-${size}px`;
+            bubble.style.left = `${Math.random() * 100}%`;
+            bubble.style.animationDelay = `${Math.random() * 3}s`;
+            
+            document.querySelector('.car-wash-container').appendChild(bubble);
+            
+            // Eliminar la burbuja después de que suba
+            setTimeout(() => {
+                bubble.remove();
+                createBubble();
+            }, 3000 + Math.random() * 3000);
+        }
+        
+        // Verificar fortaleza de contraseña
+        passwordInput.addEventListener('input', function() {
+            // Mostrar indicador de fortaleza
+            passwordStrength.classList.remove('hidden');
+            
+            const password = this.value;
+            let strength = 0;
+            
+            // Criterios de fortaleza
+            if (password.length > 6) strength += 20;
+            if (password.length > 10) strength += 20;
+            if (/[A-Z]/.test(password)) strength += 20;
+            if (/[0-9]/.test(password)) strength += 20;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+            
+            // Actualizar el medidor
+            passwordStrengthMeter.style.width = `${strength}%`;
+            
+            // Cambiar color según fortaleza
+            if (strength < 40) {
+                passwordStrengthMeter.className = "h-2 rounded bg-red-500";
+                passwordStrengthText.textContent = "Débil";
+                passwordStrengthText.className = "ml-2 text-xs font-medium text-red-500";
+            } else if (strength < 70) {
+                passwordStrengthMeter.className = "h-2 rounded bg-yellow-500";
+                passwordStrengthText.textContent = "Medio";
+                passwordStrengthText.className = "ml-2 text-xs font-medium text-yellow-500";
+            } else {
+                passwordStrengthMeter.className = "h-2 rounded bg-green-500";
+                passwordStrengthText.textContent = "Fuerte";
+                passwordStrengthText.className = "ml-2 text-xs font-medium text-green-500";
+            }
+        });
+        
+        // Verificar que las contraseñas coincidan
+        passwordConfirm.addEventListener('input', function() {
+            if (this.value === passwordInput.value) {
+                this.style.borderColor = "#10B981";
+            } else {
+                this.style.borderColor = "#EF4444";
+            }
+            updateProgressBar();
+        });
+        
+        // Actualizar barra de progreso basado en la cantidad de campos completados
+        function updateProgressBar() {
+            const allInputs = Array.from(document.querySelectorAll('#registerForm input:not([type="checkbox"])'));
+            const filledInputs = allInputs.filter(input => input.value.trim() !== '');
+            const progress = Math.min(20 + (filledInputs.length / allInputs.length) * 80, 100);
+            
+            gsap.to(progressBar, {
+                width: `${progress}%`,
+                duration: 0.5,
+                ease: "power2.out"
+            });
+        }
+        
+        // Efecto en el botón de registro
+        const registerButton = document.getElementById('registerButton');
+        registerButton.addEventListener('mouseover', () => {
+            gsap.to(registerButton, {
+                boxShadow: "0 10px 15px -3px rgba(59, 130, 246, 0.3)",
+                duration: 0.3
+            });
+        });
+        
+        registerButton.addEventListener('mouseout', () => {
+            gsap.to(registerButton, {
+                boxShadow: "0 4px 6px -1px rgba(59, 130, 246, 0.2)",
+                duration: 0.3
+            });
+        });
+        
+        // Validación del formulario
+        const form = document.getElementById('registerForm');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('id_username').value;
+            const email = document.getElementById('id_email').value;
+            const password1 = document.getElementById('id_password1').value;
+            const password2 = document.getElementById('id_password2').value;
+            const terms = document.getElementById('terms').checked;
+            
+            // Validaciones básicas
+            if (!username || !email || !password1 || !password2) {
+                showMessage('Por favor complete todos los campos requeridos.', 'error');
+                return;
+            }
+            
+            if (password1 !== password2) {
+                showMessage('Las contraseñas no coinciden.', 'error');
+                return;
+            }
+            
+            if (!terms) {
+                showMessage('Debe aceptar los términos y condiciones.', 'error');
+                return;
+            }
+            
+            // Animación de envío exitoso
+            gsap.to(progressBar, {
+                width: "100%",
+                duration: 0.5,
+                ease: "power2.out"
+            });
+            
+            // Simulación de envío
+            registerButton.disabled = true;
+            registerButton.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Registrando...</span>';
+            
+            setTimeout(() => {
+                showMessage('¡Registro exitoso! Redirigiendo...', 'success');
+                
+                // Redirigir después de un breve retraso
+                setTimeout(() => {
+                    window.location.href = '/login/';  // Ajustar según la ruta de login
+                }, 2000);
+            }, 1500);
+        });
+        
+        // Función para mostrar mensajes
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            
+            const alert = document.createElement('div');
+            alert.className = type === 'error' 
+                ? 'p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg'
+                : 'p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg';
+            
+            alert.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        ${type === 'error' 
+                          ? '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>'
+                          : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>'}
+                    </svg>
+                    ${message}
+                </div>
+            `;
+            
+            messagesDiv.appendChild(alert);
+            
+            // Animar la aparición del mensaje
+            gsap.fromTo(alert, 
+                { opacity: 0, y: -20 },
+                { opacity: 1, y: 0, duration: 0.5 }
+            );
+        }
+    });
+</script>
+</body>
+</html>

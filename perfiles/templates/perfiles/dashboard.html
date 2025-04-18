@@ -1,0 +1,81 @@
+<!-- perfiles/templates/perfiles/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Lavado de Vehículos{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
+        <!-- Ícono y título -->
+        <div class="text-center mb-6">
+            <div class="car-icon"></div>
+            <h2 class="text-2xl font-bold text-gray-800">Bienvenido, {{ user.username }}</h2>
+            <p class="text-gray-500 text-sm">Panel de Control - Lavado de Vehículos</p>
+        </div>
+
+        <!-- Resumen -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg shadow card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i> Citas Pendientes
+                </h3>
+                <p class="text-2xl font-bold text-blue-600">{{ citas_pendientes }}</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg shadow card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-check-circle mr-2 text-green-600"></i> Servicios Completados
+                </h3>
+                <p class="text-2xl font-bold text-green-600">{{ servicios_completados }}</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg shadow card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-car mr-2 text-yellow-600"></i> Vehículos Atendidos
+                </h3>
+                <p class="text-2xl font-bold text-yellow-600">{{ vehiculos_atendidos }}</p>
+            </div>
+        </div>
+
+        <!-- Gráfica de ejemplo -->
+        <div class="bg-gray-50 p-4 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Rendimiento Semanal</h3>
+            <canvas id="performanceChart" class="w-full h-64"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+            datasets: [{
+                label: 'Servicios Realizados',
+                data: [5, 10, 8, 12, 15, 7, 3],
+                borderColor: '#0288D1',
+                backgroundColor: 'rgba(2, 136, 209, 0.2)',
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Notificación de bienvenida
+    Toastify({
+        text: "¡Bienvenido al Dashboard, {{ user.username }}!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#0288D1",
+        className: "text-white",
+    }).showToast();
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+<!-- templates/admins/cliente_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Detalles de Cliente {{ cliente.id }}{% endblock %}
+
+{% block content %}
+    <h1>Detalles de Cliente {{ cliente.id }}</h1>
+    <p><strong>ID:</strong> {{ cliente.id }}</p>
+    <p><strong>Nombre:</strong> {{ cliente.nombre|default:"Sin nombre" }}</p>
+    <!-- Agrega más campos según el modelo Cliente -->
+    <a href="{% url 'admins:cliente_list' %}" class="btn btn-secondary">Volver</a>
+    <a href="{% url 'admins:cliente_delete' cliente.id %}" class="btn btn-danger">Eliminar</a>
+{% endblock %}

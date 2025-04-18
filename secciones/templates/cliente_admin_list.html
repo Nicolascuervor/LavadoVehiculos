@@ -1,0 +1,28 @@
+<!-- secciones/cliente_admin_list.html -->
+{% extends 'secciones/list_template.html' %}
+
+{% block title %}Clientes (Administrador){% endblock %}
+
+{% block content %}
+{% with title="Clientes" fields="ID,Nombre,Apellido,Email,Teléfono"|split:"," %}
+    <div class="fade-in">
+        <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
+            <div class="text-center mb-6">
+                <div class="car-icon"></div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ title }}</h2>
+                <p class="text-gray-500 text-sm">Lista de {{ title }}</p>
+            </div>
+
+            <!-- Formulario de búsqueda -->
+            <div class="mb-6">
+                <form method="get" class="flex justify-center">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Buscar por nombre, apellido o email..." class="border border-gray-300 rounded-l-md p-2 w-full max-w-md focus:ring-blue-500 focus:border-blue-500">
+                    <button type="submit" class="bg-blue-600 text-white p-2 rounded-r-md hover:bg-blue-700"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+
+            {{ block.super }}
+        </div>
+    </div>
+{% endwith %}
+{% endblock %}

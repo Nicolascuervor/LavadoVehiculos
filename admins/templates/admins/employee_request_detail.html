@@ -1,0 +1,24 @@
+<!-- templates/admins/employee_request_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Solicitud de {{ employee_request.user.username }}{% endblock %}
+
+{% block content %}
+    <h1>Solicitud de {{ employee_request.user.username }}</h1>
+    <p><strong>ID:</strong> {{ employee_request.id }}</p>
+    <p><strong>Usuario:</strong> {{ employee_request.user.username }}</p>
+    <p><strong>Rol Solicitado:</strong> {{ employee_request.requested_rol }}</p>
+    <p><strong>Estado:</strong> {{ employee_request.status }}</p>
+    <p><strong>Fecha de Creación:</strong> {{ employee_request.created_at }}</p>
+    <p><strong>Última Actualización:</strong> {{ employee_request.updated_at }}</p>
+    
+    {% if employee_request.status == 'pending' %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="status" value="approved" class="btn btn-success">Aprobar</button>
+            <button type="submit" name="status" value="rejected" class="btn btn-danger">Rechazar</button>
+        </form>
+    {% endif %}
+    
+    <a href="{% url 'admins:employee_request_list' %}" class="btn btn-secondary mt-2">Volver</a>
+{% endblock %}

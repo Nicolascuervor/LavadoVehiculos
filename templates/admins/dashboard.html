@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Administrador{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Panel de Administración</h1>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Empleados</h5>
+                    <p class="card-text">Gestiona el personal de la empresa</p>
+                    <a href="{% url 'admin_empleados' %}" class="btn btn-primary">Ver Empleados</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Servicios</h5>
+                    <p class="card-text">Administra los servicios ofrecidos</p>
+                    <a href="{% url 'admin_servicios' %}" class="btn btn-primary">Ver Servicios</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Vehículos</h5>
+                    <p class="card-text">Gestiona los vehículos registrados</p>
+                    <a href="{% url 'admin_vehiculos' %}" class="btn btn-primary">Ver Vehículos</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Usuarios</h5>
+                    <p class="card-text">Administra los usuarios del sistema</p>
+                    <a href="{% url 'admin_usuarios' %}" class="btn btn-primary">Ver Usuarios</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

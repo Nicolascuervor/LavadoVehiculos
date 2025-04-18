@@ -1,0 +1,74 @@
+<!-- templates/admins/model_list.html -->
+{% extends 'admins/base_admin.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block header %}{{ model._meta.verbose_name_plural.title }}{% endblock %}
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <!-- Barra de búsqueda -->
+    <form method="GET" class="mb-4">
+        <div class="flex">
+            <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Buscar..." class="w-full p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            <button type="submit" class="bg-indigo-600 text-white p-2 rounded-r-lg hover:bg-indigo-700 transition duration-200">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </form>
+    <!-- Botón para crear nuevo -->
+    <a href="{% url 'admins:'|add:model._meta.model_name|add:'_create' %}" class="inline-block mb-4 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-200">
+        <i class="fas fa-plus mr-2"></i> Crear {{ model._meta.verbose_name }}
+    </a>
+    <!-- Tabla -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    {% for field in object_list.0.get_fields_detailed|default:object_list.0|get_fields %}
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ field.0|default:field }}
+                        </th>
+                    {% endfor %}
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for obj in object_list %}
+                    <tr class="hover:bg-gray-50 transition duration-200">
+                        {% for field in obj.get_fields_detailed|default:obj|get_fields %}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ field.1|default:field }}</td>
+                        {% endfor %}
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'admins:'|add:model._meta.model_name|add:'_detail' obj.pk %}" class="text-indigo-600 hover:text-indigo-900 mr-4">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'admins:'|add:model._meta.model_name|add:'_update' obj.pk %}" class="text-yellow-600 hover:text-yellow-900 mr-4">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'admins:'|add:model._meta.model_name|add:'_delete' obj.pk %}" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="100" class="px-6 py-4 text-center text-gray-500">No hay registros disponibles.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Paginación -->
+    {% if is_paginated %}
+        <div class="mt-4 flex justify-center">
+            <nav class="inline-flex rounded-md shadow">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">Anterior</a>
+                {% endif %}
+                <span class="px-3 py-2 border border-gray-300 bg-white text-gray-700">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">Siguiente</a>
+                {% endif %}
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

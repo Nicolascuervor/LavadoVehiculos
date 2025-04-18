@@ -1,0 +1,29 @@
+<!-- secciones/detail_template.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Lavado de Vehículos{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
+        <div class="text-center mb-6">
+            <div class="car-icon"></div>
+            <h2 class="text-2xl font-bold text-gray-800">{{ title }}</h2>
+            <p class="text-gray-500 text-sm">Detalles de {{ object }}</p>
+        </div>
+
+        <div class="space-y-4">
+            {% for field, value in object.get_fields %}
+            <div class="flex justify-between border-b py-2">
+                <span class="font-semibold text-gray-700">{{ field }}</span>
+                <span class="text-gray-600">{{ value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'perfiles:dashboard' %}" class="btn-primary text-white px-4 py-2 rounded-md">Volver al Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

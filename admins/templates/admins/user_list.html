@@ -1,0 +1,334 @@
+<!-- templates/admins/user_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Lista de Usuarios - Lavadero AutoSplash{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen p-6">
+    <!-- Header con logo -->
+    <div class="flex items-center justify-between mb-8 bg-white shadow-lg rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 rounded-full p-2 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-blue-800">AutoSplash</h1>
+        </div>
+        <div class="text-sm text-gray-600">Panel de Administración</div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="bg-white rounded-lg shadow-xl p-6 overflow-hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Lista de Usuarios
+            </h2>
+            <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition-all duration-300 transform hover:scale-105 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Nuevo Usuario
+            </a>
+        </div>
+
+        <!-- Búsqueda y filtros -->
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 rounded-lg">
+            <div class="relative flex-grow max-w-md mb-4 sm:mb-0">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" class="pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Buscar usuario...">
+            </div>
+            <div class="flex space-x-2">
+                <select class="border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option>Todos los roles</option>
+                    <option>Administrador</option>
+                    <option>Operador</option>
+                    <option>Cliente</option>
+                </select>
+                <button class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla responsiva -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 table-auto">
+                <thead>
+                    <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider rounded-tl-lg">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre de Usuario</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rol</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider rounded-tr-lg">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="userTable">
+                    {% for user in users %}
+                    <tr class="hover:bg-blue-50 transition-colors duration-200 fade-in" style="animation-delay: {{ forloop.counter0 }}00ms">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ user.id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 bg-blue-200 rounded-full flex items-center justify-center mr-2">
+                                    <span class="text-blue-800 font-medium">{{ user.username|slice:":1"|upper }}</span>
+                                </div>
+                                {{ user.username }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ user.email }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {% if user.profile.role == "admin" %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    Administrador
+                                </span>
+                            {% elif user.profile.role == "operator" %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    Operador
+                                </span>
+                            {% elif user.profile.role == "client" %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Cliente
+                                </span>
+                            {% else %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    {{ user.profile.role|default:"Sin perfil" }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">
+                            <div class="flex justify-center space-x-2">
+                                <a href="{% url 'admins:user_detail' user.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-all duration-300 hover:shadow-md flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z" />
+                                    </svg>
+                                    Ver
+                                </a>
+                                <a href="{% url 'admins:user_delete' user.id %}" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-all duration-300 hover:shadow-md flex items-center delete-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <p class="text-lg font-medium">No hay usuarios registrados.</p>
+                                <p class="text-sm">Agrega un nuevo usuario para comenzar</p>
+                                <a href="#" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition-all duration-300">
+                                    Agregar Usuario
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="mt-6 flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+                Mostrando <span class="font-medium">{{ users|length }}</span> de <span class="font-medium">{{ users|length }}</span> usuarios
+            </div>
+            <div class="flex space-x-1">
+                <button class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 transition-colors duration-200">&laquo;</button>
+                <button class="px-3 py-1 rounded border bg-blue-600 text-white">1</button>
+                <button class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 transition-colors duration-200">2</button>
+                <button class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 transition-colors duration-200">3</button>
+                <button class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100 transition-colors duration-200">&raquo;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer con tema de lavadero -->
+    <div class="mt-8 bg-white rounded-lg shadow-lg p-4">
+        <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+                &copy; 2025 AutoSplash - Lavadero de Vehículos Premium
+            </div>
+            <div class="flex space-x-4">
+                <div class="flex items-center text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Panel de Gestión</span>
+                </div>
+                <div class="flex items-center text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Ayuda</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div id="deleteModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Eliminar Usuario</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">¿Estás seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirmDelete" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Eliminar
+                </button>
+                <button type="button" id="cancelDelete" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.0/cdn.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animación de entrada para las filas de la tabla
+    const rows = document.querySelectorAll('#userTable tr');
+    rows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            row.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, 100 + (index * 100));
+    });
+
+    // Búsqueda en tiempo real
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#userTable tr');
+            
+            rows.forEach(row => {
+                const username = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                const email = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+                const role = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+                
+                if (username.includes(searchTerm) || email.includes(searchTerm) || role.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Modal de confirmación para eliminar
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const cancelDelete = document.getElementById('cancelDelete');
+    let currentDeleteUrl = '';
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentDeleteUrl = this.getAttribute('href');
+            deleteModal.classList.remove('hidden');
+        });
+    });
+
+    if (cancelDelete) {
+        cancelDelete.addEventListener('click', function() {
+            deleteModal.classList.add('hidden');
+        });
+    }
+
+    if (confirmDelete) {
+        confirmDelete.addEventListener('click', function() {
+            if (currentDeleteUrl) {
+                window.location.href = currentDeleteUrl;
+            }
+        });
+    }
+
+    // Cerrar modal al hacer clic fuera
+    window.addEventListener('click', function(e) {
+        if (e.target === deleteModal) {
+            deleteModal.classList.add('hidden');
+        }
+    });
+
+    
+});
+</script>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+}
+
+/* Estilo para elementos con tema de lavadero */
+.water-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.water-shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.1) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    transform: rotate(-30deg);
+    animation: shine 3s infinite linear;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) rotate(-30deg); }
+    100% { transform: translateX(100%) rotate(-30deg); }
+}
+</style>
+{% endblock %}
