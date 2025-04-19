@@ -97,7 +97,22 @@
 
             <!-- Mensajes de error -->
             <div class="mb-4" id="messages">
-                <!-- Aquí irían los mensajes de Django -->
+                {% if messages %}
+                {% for message in messages %}
+                    <div class="p-4 mb-4 text-sm {% if message.tags == 'success' %}text-green-700 bg-green-100{% else %}text-red-700 bg-red-100{% endif %} rounded-lg">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                {% if message.tags == 'success' %}
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                {% else %}
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                {% endif %}
+                            </svg>
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
             </div>
 
             <!-- Formulario -->
@@ -160,128 +175,96 @@
     </div>
 
     <script>
-        // Crear burbujas y gotas de agua
         document.addEventListener('DOMContentLoaded', () => {
             const waterDrops = document.getElementById('water-drops');
-            
+            const loginForm = document.getElementById('loginForm');
+            const loginButton = document.getElementById('loginButton');
+        
             // Crear burbujas
             for (let i = 0; i < 15; i++) {
                 createBubble();
             }
-            
+        
             // Crear gotas de agua
             for (let i = 0; i < 30; i++) {
                 const drop = document.createElement('div');
                 drop.className = 'absolute bg-blue-300 rounded-full opacity-50';
-                
                 const size = Math.random() * 15 + 5;
                 drop.style.width = `${size}px`;
                 drop.style.height = `${size}px`;
                 drop.style.top = `${Math.random() * 100}%`;
                 drop.style.left = `${Math.random() * 100}%`;
-                
                 waterDrops.appendChild(drop);
             }
-            
-            // Efecto de salpicadura al hacer clic en el icono
+        
+            // Efecto de salpicadura en el icono
             const carIcon = document.querySelector('.car-icon');
             const splash = document.getElementById('splash');
-            
             carIcon.addEventListener('click', () => {
                 gsap.to(splash, {
                     scale: 1.5,
                     opacity: 0,
                     duration: 0.6,
-                    onComplete: () => {
-                        gsap.set(splash, { scale: 0, opacity: 1 });
-                    }
+                    onComplete: () => gsap.set(splash, { scale: 0, opacity: 1 })
                 });
             });
-            
+        
             // Mostrar/ocultar contraseña
             const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('id_password');
-            
             togglePassword.addEventListener('click', () => {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
-                
-                // Cambiar el icono
                 const svg = togglePassword.querySelector('svg');
-                if (type === 'text') {
-                    svg.innerHTML = `<path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />`;
-                } else {
-                    svg.innerHTML = `<path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
-                                    <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />`;
-                }
+                svg.innerHTML = type === 'text'
+                    ? `<path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />`
+                    : `<path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" /><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />`;
             });
-            
+        
             // Animación de los campos de formulario
             const inputs = document.querySelectorAll('.input-field');
             inputs.forEach(input => {
                 input.addEventListener('focus', () => {
-                    gsap.to(input, {
-                        scale: 1.02,
-                        duration: 0.2,
-                        ease: 'power1.out'
-                    });
+                    gsap.to(input, { scale: 1.02, duration: 0.2, ease: 'power1.out' });
                 });
-                
                 input.addEventListener('blur', () => {
-                    gsap.to(input, {
-                        scale: 1,
-                        duration: 0.2,
-                        ease: 'power1.in'
-                    });
+                    gsap.to(input, { scale: 1, duration: 0.2, ease: 'power1.in' });
                 });
             });
-            
-            // Simulación de envío de formulario
-            const loginForm = document.getElementById('loginForm');
-            const loginButton = document.getElementById('loginButton');
-            
+        
+            // Manejo del envío del formulario
             loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
                 loginButton.disabled = true;
                 loginButton.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Procesando...
+                    <span class="flex items-center justify-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Procesando...
+                    </span>
                 `;
-                
-                // Aquí normalmente se enviaría el formulario real
-                // Para la demostración, simulamos una espera   
-                setTimeout(() => {
-                    loginForm.submit();
-                    login(request, user)
-                }, 1500);
+                // No usamos e.preventDefault(), permitiendo el envío normal al servidor
             });
-        });
         
-        // Función para crear burbujas aleatoriamente
-        function createBubble() {
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            
-            const size = Math.random() * 20 + 10;
-            bubble.style.width = `${size}px`;
-            bubble.style.height = `${size}px`;
-            bubble.style.left = `${Math.random() * 100}%`;
-            bubble.style.bottom = `-${size}px`;
-            bubble.style.animationDelay = `${Math.random() * 3}s`;
-            bubble.style.animationDuration = `${Math.random() * 2 + 2}s`;
-            
-            document.querySelector('.car-wash-container').appendChild(bubble);
-            
-            // Eliminar burbuja después de animación
-            setTimeout(() => {
-                bubble.remove();
-                createBubble();
-            }, 4000);
-        }
+            // Función para crear burbujas
+            function createBubble() {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 20 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.bottom = `-${size}px`;
+                bubble.style.animationDelay = `${Math.random() * 3}s`;
+                bubble.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                document.querySelector('.car-wash-container').appendChild(bubble);
+                setTimeout(() => {
+                    bubble.remove();
+                    createBubble();
+                }, 4000);
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,81 +1,621 @@
-<!-- perfiles/templates/perfiles/dashboard.html -->
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lavado de Vehículos Premium{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --bg-light: linear-gradient(135deg, #E0F7FA, #BBDEFB);
+            --bg-dark: linear-gradient(135deg, #1A237E, #0D47A1);
+            --text-light: #0D47A1;
+            --text-dark: #E1F5FE;
+            --card-bg-light: rgba(255, 255, 255, 0.85);
+            --card-bg-dark: rgba(25, 42, 86, 0.85);
+            --primary: #0288D1;
+            --primary-dark: #01579B;
+            --secondary: #4CAF50;
+            --secondary-dark: #2E7D32;
+            --accent: #FFB300;
+            --accent-dark: #FF8F00;
+            --bubble-bg: rgba(255, 255, 255, 0.2);
+        }
 
-{% block title %}Dashboard - Lavado de Vehículos{% endblock %}
+        body {
+            background: var(--bg-light);
+            background-attachment: fixed;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-light);
+            position: relative;
+            overflow-x: hidden;
+        }
 
-{% block content %}
-<div class="fade-in">
-    <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
-        <!-- Ícono y título -->
-        <div class="text-center mb-6">
-            <div class="car-icon"></div>
-            <h2 class="text-2xl font-bold text-gray-800">Bienvenido, {{ user.username }}</h2>
-            <p class="text-gray-500 text-sm">Panel de Control - Lavado de Vehículos</p>
-        </div>
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+        }
 
-        <!-- Resumen -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-blue-50 p-4 rounded-lg shadow card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i> Citas Pendientes
-                </h3>
-                <p class="text-2xl font-bold text-blue-600">{{ citas_pendientes }}</p>
-            </div>
-            <div class="bg-green-50 p-4 rounded-lg shadow card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-check-circle mr-2 text-green-600"></i> Servicios Completados
-                </h3>
-                <p class="text-2xl font-bold text-green-600">{{ servicios_completados }}</p>
-            </div>
-            <div class="bg-yellow-50 p-4 rounded-lg shadow card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-car mr-2 text-yellow-600"></i> Vehículos Atendidos
-                </h3>
-                <p class="text-2xl font-bold text-yellow-600">{{ vehiculos_atendidos }}</p>
-            </div>
-        </div>
+        body.dark {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
 
-        <!-- Gráfica de ejemplo -->
-        <div class="bg-gray-50 p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Rendimiento Semanal</h3>
-            <canvas id="performanceChart" class="w-full h-64"></canvas>
-        </div>
-    </div>
-</div>
+        .bg-white {
+            background-color: var(--card-bg-light);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-            datasets: [{
-                label: 'Servicios Realizados',
-                data: [5, 10, 8, 12, 15, 7, 3],
-                borderColor: '#0288D1',
-                backgroundColor: 'rgba(2, 136, 209, 0.2)',
-                fill: true,
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+        body.dark .bg-white {
+            background-color: var(--card-bg-dark);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .bg-blue-50 { background-color: rgba(227, 242, 253, 0.8); }
+        body.dark .bg-blue-50 { background-color: rgba(30, 58, 138, 0.8); }
+        .bg-green-50 { background-color: rgba(232, 245, 233, 0.8); }
+        body.dark .bg-green-50 { background-color: rgba(26, 60, 52, 0.8); }
+        .bg-yellow-50 { background-color: rgba(255, 248, 225, 0.8); }
+        body.dark .bg-yellow-50 { background-color: rgba(76, 44, 0, 0.8); }
+
+        .text-blue-600 { color: var(--primary); }
+        body.dark .text-blue-600 { color: #90CAF9; }
+        .text-green-600 { color: var(--secondary); }
+        body.dark .text-green-600 { color: #A5D6A7; }
+        .text-yellow-600 { color: var(--accent); }
+        body.dark .text-yellow-600 { color: #FFCA28; }
+
+        /* Animaciones de gotas de agua */
+        .water-drops {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .drop {
+            position: absolute;
+            background: var(--bubble-bg);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        body.dark .drop {
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Efectos de navegación */
+        .nav-shadow {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .dropdown-menu {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            transform-origin: top right;
+            transform: scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dropdown-menu.show {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .dropdown-menu a {
+            transition: all 0.2s ease;
+            border-left: 0px solid transparent;
+        }
+
+        .dropdown-menu a:hover {
+            border-left: 4px solid var(--primary);
+            background-color: rgba(2, 136, 209, 0.1);
+        }
+
+        /* Botones con animación */
+        .btn-primary {
+            background-color: var(--primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s, height 0.5s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover::after {
+            transform: translate(-50%, -50%) scale(2);
+            height: 300%;
+            opacity: 0;
+        }
+
+        /* Nuevas animaciones para tarjetas */
+        .card-hover {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-hover::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-hover:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Responsividad */
+        @media (max-width: 768px) {
+            .dropdown-menu {
+                width: 100vw;
+                right: -16px;
+                border-radius: 0;
+                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
             }
         }
-    });
 
-    // Notificación de bienvenida
-    Toastify({
-        text: "¡Bienvenido al Dashboard, {{ user.username }}!",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#0288D1",
-        className: "text-white",
-    }).showToast();
-</script>
-{% endblock %}
+        footer {
+            width: 100vw !important;
+            margin-left: calc(-50vw + 50%) !important;
+            margin-right: calc(-50vw + 50%) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Fondo animado de gotas de agua -->
+    <div class="water-drops"></div>
+
+    <!-- Menú desplegable (solo para usuarios autenticados) -->
+    {% if user.is_authenticated %}
+    <nav class="bg-blue-600 bg-opacity-95 p-4 nav-shadow sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-white text-lg font-bold flex items-center">
+                <i class="fas fa-car-wash mr-2 animate-pulse"></i>
+                <span class="hidden md:inline">Lavado Premium</span>
+                <span class="md:hidden">LavaPro</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Interruptor de tema -->
+                <button id="themeToggle" class="text-white focus:outline-none rounded-full bg-blue-700 p-2 hover:bg-blue-800 transition-all duration-300">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="relative dropdown">
+                    <button id="dropdownButton" class="text-white focus:outline-none flex items-center space-x-2 bg-blue-700 px-3 py-2 rounded-lg hover:bg-blue-800 transition-all duration-300">
+                        <span class="hidden md:inline mr-2">Menú</span>
+                        <i class="fas fa-bars w-4 h-4"></i>
+                    </button>
+                    <div id="dropdownMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10">
+                        <div class="p-2 border-b border-gray-200">
+                            <a href="{% url 'perfiles:dashboard' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="{% url 'perfiles:profile' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                <i class="fas fa-user mr-2 text-blue-600"></i>
+                                <span>Mi Perfil</span>
+                            </a>
+                            <!-- Opción del Panel de Admin solo para superusers o staff -->
+                            {% if user.is_superuser or user.is_staff %}
+                            <a href="{% url 'admins:dashboard' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                <i class="fas fa-cogs mr-2 text-blue-600"></i>
+                                <span>Panel de Admin</span>
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        <!-- Sección de Administrador (solo para superusers o staff) -->
+                        {% if user.is_superuser or user.is_staff %}
+                        <div class="p-2 border-b border-gray-200">
+                            <p class="px-2 py-1 text-sm text-gray-500 font-semibold">Administrador</p>
+                            <div class="grid grid-cols-2 gap-1">
+                                <a href="{% url 'secciones:cliente-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-users mr-2 text-blue-600"></i>
+                                    <span>Clientes</span>
+                                </a>
+                                <a href="{% url 'secciones:vehiculo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-car mr-2 text-blue-600"></i>
+                                    <span>Vehículos</span>
+                                </a>
+                                <a href="{% url 'secciones:empleado-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-user-tie mr-2 text-blue-600"></i>
+                                    <span>Empleados</span>
+                                </a>
+                                <a href="{% url 'secciones:jornada-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                                    <span>Jornadas</span>
+                                </a>
+                                <a href="{% url 'secciones:turno-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-clock mr-2 text-blue-600"></i>
+                                    <span>Turnos</span>
+                                </a>
+                                <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-pump-soap mr-2 text-blue-600"></i>
+                                    <span>T. Insumos</span>
+                                </a>
+                                <a href="{% url 'secciones:insumo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-spray-can mr-2 text-blue-600"></i>
+                                    <span>Insumos</span>
+                                </a>
+                                <a href="{% url 'secciones:inventario-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-warehouse mr-2 text-blue-600"></i>
+                                    <span>Inventarios</span>
+                                </a>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'secciones:tipolavado-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-water mr-2 text-blue-600"></i>
+                                    <span>Tipos de Lavado</span>
+                                </a>
+                                <a href="{% url 'secciones:servicio-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-concierge-bell mr-2 text-blue-600"></i>
+                                    <span>Servicios</span>
+                                </a>
+                                <a href="{% url 'secciones:factura-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-file-invoice-dollar mr-2 text-blue-600"></i>
+                                    <span>Facturas</span>
+                                </a>
+                                <a href="{% url 'secciones:cita-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
+                                    <span>Citas</span>
+                                </a>
+                                <a href="{% url 'secciones:promocion-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
+                                    <i class="fas fa-percentage mr-2 text-blue-600"></i>
+                                    <span>Promociones</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Cerrar sesión -->
+                        <div class="p-2 border-t border-gray-200">
+                            <form method="post" action="{% url 'logout' %}" class="block">
+                                {% csrf_token %}
+                                <button type="submit" class="flex items-center p-2 w-full text-left rounded hover:bg-red-100 transition-all text-red-500">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>
+                                    <span>Cerrar Sesión</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Contenido de la página -->
+    <div class="container mx-auto mt-8 px-4">
+        {% block content %}
+        <!-- Contenido predeterminado para visualización -->
+        <div class="max-w-6xl mx-auto">
+            <!-- Sección de portada -->
+            <div class="relative overflow-hidden rounded-2xl mb-12 bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-xl">
+                <div class="absolute top-0 right-0 w-full h-full opacity-10">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                        <path fill="white" d="M48.8,-64.2C63.5,-55.3,75.8,-42,79.9,-26.8C84,-11.5,79.9,5.8,72.7,20.1C65.5,34.5,55.2,45.9,42.5,55.5C29.9,65,14.9,72.7,-0.9,73.9C-16.7,75.1,-33.4,69.8,-46.1,59.6C-58.7,49.4,-67.2,34.3,-73,17.2C-78.8,0.1,-81.8,-19,-73.8,-31.6C-65.8,-44.2,-46.8,-50.3,-31.1,-58.9C-15.3,-67.5,-2.7,-78.7,12.3,-83.6C27.3,-88.5,54.6,-87.1,61.3,-76.6Z" transform="translate(100 100)" />
+                    </svg>
+                </div>
+                <div class="px-8 py-16 md:py-20 md:px-12 relative z-10 flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/2 mb-8 md:mb-0">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Brillo y Cuidado <span class="text-yellow-300">Premium</span> para tu Vehículo</h1>
+                        <p class="text-blue-100 text-lg mb-8">Ofrecemos el servicio de lavado más profesional y completo para que tu vehículo siempre luzca como nuevo.</p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg inline-flex items-center">
+                                <i class="fas fa-calendar-plus mr-2"></i> Reservar Cita
+                            </a>
+                            <a href="#" class="bg-transparent hover:bg-blue-600 text-white border-2 border-white font-semibold py-3 px-6 rounded-lg transition duration-300 inline-flex items-center">
+                                <i class="fas fa-info-circle mr-2"></i> Nuestros Servicios
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Características destacadas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg text-center">
+                    <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-tint text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Eco-Friendly</h3>
+                    <p class="text-gray-600">Productos biodegradables y técnicas de ahorro de agua para cuidar el medio ambiente.</p>
+                </div>
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg text-center">
+                    <div class="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Servicio Rápido</h3>
+                    <p class="text-gray-600">Lavado completo en menos de 30 minutos sin comprometer la calidad.</p>
+                </div>
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg text-center">
+                    <div class="bg-yellow-100 text-yellow-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-star text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Acabado Premium</h3>
+                    <p class="text-gray-600">Detallado profesional para que tu vehículo brille como nuevo.</p>
+                </div>
+            </div>
+
+            <!-- Servicios -->
+            <div class="mb-16">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold mb-4">Nuestros Servicios</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Desde lavados básicos hasta detallados completos para mantener tu vehículo impecable.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card-hover bg-white rounded-xl overflow-hidden shadow-md">
+                        <div class="h-40 bg-blue-600 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="fas fa-car-wash text-white text-5xl"></i>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">Lavado Básico</h3>
+                            <p class="text-gray-600 mb-4">Lavado exterior, secado a mano y limpieza de llantas.</p>
+                            <p class="text-blue-600 font-bold">Desde $15.000</p>
+                        </div>
+                    </div>
+                    <div class="card-hover bg-white rounded-xl overflow-hidden shadow-md">
+                        <div class="h-40 bg-green-600 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-green-400"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="fas fa-spray-can text-white text-5xl"></i>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">Lavado Premium</h3>
+                            <p class="text-gray-600 mb-4">Lavado interior y exterior, aspirado y ceras protectoras.</p>
+                            <p class="text-green-600 font-bold">Desde $25.000</p>
+                        </div>
+                    </div>
+                    <div class="card-hover bg-white rounded-xl overflow-hidden shadow-md">
+                        <div class="h-40 bg-yellow-500 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-yellow-500 to-yellow-300"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-white text-5xl"></i>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">Detallado Completo</h3>
+                            <p class="text-gray-600 mb-4">Tratamiento completo con pulido y protección cerámica.</p>
+                            <p class="text-yellow-600 font-bold">Desde $45.000</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <a href="#" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-md">Ver todos los servicios</a>
+                </div>
+            </div>
+
+            <!-- Testimonios -->
+            <div class="mb-16 bg-white rounded-xl p-8 shadow-lg">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold mb-4">Lo que dicen nuestros clientes</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">La satisfacción de nuestros clientes es nuestra prioridad.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="p-6 bg-blue-50 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-blue-600 font-bold">JM</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Juan Martínez</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600">"Servicio excelente, mi auto quedó como nuevo. ¡Volveré sin duda!"</p>
+                    </div>
+                    <div class="p-6 bg-green-50 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-green-600 font-bold">MR</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">María Rodríguez</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600">"Atención puntual y productos de gran calidad. ¡Superó mis expectativas!"</p>
+                    </div>
+                    <div class="p-6 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-yellow-600 font-bold">CP</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Carlos Pérez</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600">"El detallado completo transformó mi vehículo. ¡Increíble!"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-blue-900 text-white mt-16 relative w-full">
+                <div class="container mx-auto px-4 py-12">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 flex items-center">
+                                <i class="fas fa-car-wash mr-2"></i> Lavado Premium
+                            </h3>
+                            <p class="text-blue-200 mb-4">Servicio de lavado y detallado de alta calidad para tu vehículo.</p>
+                            <div class="flex space-x-4">
+                                <a href="#" class="text-white hover:text-blue-300 transition-colors"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" class="text-white hover:text-blue-300 transition-colors"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="text-white hover:text-blue-300 transition-colors"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="text-white hover:text-blue-300 transition-colors"><i class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Enlaces rápidos</h3>
+                            <ul class="space-y-2">
+                                <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Inicio</a></li>
+                                <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Servicios</a></li>
+                                <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Reservas</a></li>
+                                <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Contacto</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Horarios</h3>
+                            <ul class="space-y-2">
+                                <li class="flex justify-between"><span class="text-blue-200">Lunes - Viernes:</span><span>8:00 - 20:00</span></li>
+                                <li class="flex justify-between"><span class="text-blue-200">Sábados:</span><span>8:00 - 18:00</span></li>
+                                <li class="flex justify-between"><span class="text-blue-200">Domingos:</span><span>9:00 - 15:00</span></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><i class="fas fa-map-marker-alt mt-1 mr-2 text-blue-300"></i><span>Av. Principal 123, Santiago</span></li>
+                                <li class="flex items-start"><i class="fas fa-phone-alt mt-1 mr-2 text-blue-300"></i><span>+57 (304) 597-2395</span></li>
+                                <li class="flex items-start"><i class="fas fa-envelope mt-1 mr-2 text-blue-300"></i><span>info@lavadopremium.cl</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="border-t border-blue-800 mt-8 pt-8 text-center">
+                        <p class="text-blue-300">© 2025 Lavado Premium. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        {% endblock %}
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle del menú desplegable
+            const dropdownButton = document.getElementById('dropdownButton');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownButton && dropdownMenu) {
+                dropdownButton.addEventListener('click', function() {
+                    dropdownMenu.classList.toggle('hidden');
+                    dropdownMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function(event) {
+                    if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.add('hidden');
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // Toggle de tema claro/oscuro
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            if (themeToggle) {
+                const darkMode = localStorage.getItem('darkMode') === 'true';
+                if (darkMode) {
+                    body.classList.add('dark');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+                themeToggle.addEventListener('click', function() {
+                    body.classList.toggle('dark');
+                    const isDark = body.classList.contains('dark');
+                    localStorage.setItem('darkMode', isDark);
+                    themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                });
+            }
+
+            // Animación de gotas de agua
+            const waterDrops = document.querySelector('.water-drops');
+            if (waterDrops) {
+                for (let i = 0; i < 20; i++) {
+                    const drop = document.createElement('div');
+                    drop.classList.add('drop');
+                    drop.style.width = Math.random() * 40 + 10 + 'px';
+                    drop.style.height = drop.style.width;
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDuration = Math.random() * 10 + 5 + 's';
+                    drop.style.animationDelay = Math.random() * 5 + 's';
+                    waterDrops.appendChild(drop);
+                }
+            }
+
+            // Notificaciones Toastify
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success')) {
+                Toastify({
+                    text: "Operación realizada con éxito",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
+            }
+            if (urlParams.has('error')) {
+                Toastify({
+                    text: "Ha ocurrido un error. Intente nuevamente.",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                }).showToast();
+            }
+        });
+    </script>
+</body>
+</html>

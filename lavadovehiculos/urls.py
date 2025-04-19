@@ -23,9 +23,9 @@ from django.contrib.auth.views import LoginView, LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', LoginView.as_view(template_name='perfiles/login.html'), name='login'),  # Vista de inicio de sesión
     path('api/secciones/', include('secciones.urls')),  # URLs de la app secciones (APIs)
-    path('', include('perfiles.urls')),  # URLs de la app perfiles (plantillas y APIs)
-    path('login/', LoginView.as_view(template_name='perfiles/login.html'), name='login'),  # Vista de inicio de sesión
+    path('perfiles/', include('perfiles.urls')),  # URLs de la app perfiles (plantillas y APIs)
     path('logout/', LogoutView.as_view(), name='logout'),  # Vista de cierre de sesión,
     path('admins/', include('admins.urls')),  # Agrega la app admins
 ]

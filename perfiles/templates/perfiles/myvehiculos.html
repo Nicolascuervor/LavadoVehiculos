@@ -1,0 +1,118 @@
+<!-- templates/perfiles/myvehiculos.html -->
+<div class="mt-8 pt-6 border-t border-gray-200">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Mis Vehículos</h3>
+  
+    <!-- Mensaje si no se pueden agregar más vehículos -->
+    {% if not puede_agregar %}
+      <p class="text-red-500 text-sm mb-4">Has alcanzado el límite de 10 vehículos registrados.</p>
+    {% endif %}
+  
+    <!-- Formulario para agregar/editar vehículo -->
+    {% if puede_agregar %}
+      <form method="post" class="mb-6">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <input type="hidden" name="vehiculo_id" value="">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {% for field in vehiculo_form %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+        <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Agregar Vehículo
+        </button>
+      </form>
+    {% endif %}
+  
+    <!-- Tabla de vehículos -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border rounded-lg">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Tipo</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Tamaño</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Marca</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Modelo</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Descripción</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Placa</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Color</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vehiculo in vehiculos %}
+            <tr class="border-t">
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.tipo }}</td>
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.tamanio }}</td>
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.marca }}</td>
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.modelo }}</td>
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.descripcion }}</td>
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.placa }}</td>
+              <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.color }}</td>
+              <td class="py-3 px-4 flex space-x-2">
+                <!-- Botón para editar -->
+                <button onclick="editVehicle({{ vehiculo.id }}, '{{ vehiculo.tipo }}', '{{ vehiculo.tamanio }}', '{{ vehiculo.marca }}', '{{ vehiculo.modelo }}', '{{ vehiculo.descripcion }}', '{{ vehiculo.placa }}', '{{ vehiculo.color }}')" class="text-blue-600 hover:text-blue-800">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <!-- Botón para eliminar -->
+                <form method="post" onsubmit="return confirm('¿Estás seguro de que deseas marcar este vehículo como inactivo?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="vehiculo_id" value="{{ vehiculo.id }}">
+                  <button type="submit" class="text-red-600 hover:text-red-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="py-3 px-4 text-sm text-gray-500 text-center">No tienes vehículos registrados.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Script para la interactividad -->
+  <script>
+    function editVehicle(id, tipo, tamanio, marca, modelo, descripcion, placa, color) {
+      // Llenar el formulario con los datos del vehículo para edición
+      document.querySelector('input[name="action"]').value = 'update';
+      document.querySelector('input[name="vehiculo_id"]').value = id;
+  
+      // Llenar los campos del formulario
+      document.querySelector('select[name="tipo"]').value = tipo;
+      document.querySelector('select[name="tamanio"]').value = tamanio;
+      document.querySelector('input[name="marca"]').value = marca;
+      document.querySelector('input[name="modelo"]').value = modelo;
+      document.querySelector('input[name="descripcion"]').value = descripcion;
+      document.querySelector('input[name="placa"]').value = placa;
+      document.querySelector('input[name="color"]').value = color;
+  
+      // Cambiar el texto del botón
+      const submitButton = document.querySelector('button[type="submit"]');
+      submitButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Guardar Cambios
+      `;
+      submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+      submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+    }
+  </script>

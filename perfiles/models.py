@@ -13,7 +13,7 @@ class UserProfile(models.Model):
         ('cliente', 'Cliente'),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+    photo = models.ImageField(upload_to='profile/', blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='cliente')
 
     def __str__(self):

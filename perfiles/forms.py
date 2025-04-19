@@ -15,7 +15,7 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['photo', 'role']
+        fields = ['photo']
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
