@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lavado de Vehículos Premium{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -208,129 +209,401 @@
             margin-left: calc(-50vw + 50%) !important;
             margin-right: calc(-50vw + 50%) !important;
         }
+
+
+        :root {
+            --bg-light: linear-gradient(135deg, #F0F7FF, #D6EAF8);
+            --bg-dark: linear-gradient(135deg, #1E2A44, #0A1D37);
+            --text-light: #1E3A8A;
+            --text-dark: #F1F5F9;
+            --card-bg-light: rgba(255, 255, 255, 0.9);
+            --card-bg-dark: rgba(30, 41, 59, 0.9);
+            --primary: #3B82F6;
+            --primary-dark: #1E40AF;
+            --secondary: #10B981;
+            --secondary-dark: #047857;
+            --accent: #F59E0B;
+            --accent-dark: #B45309;
+            --bubble-bg: rgba(255, 255, 255, 0.3);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            background: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-light);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+        }
+
+        body.dark {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .bg-white {
+            background-color: var(--card-bg-light);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+        }
+
+        body.dark .bg-white {
+            background-color: var(--card-bg-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bg-blue-50 { background-color: rgba(219, 234, 254, 0.9); }
+        body.dark .bg-blue-50 { background-color: rgba(30, 64, 175, 0.9); }
+        .bg-green-50 { background-color: rgba(209, 250, 229, 0.9); }
+        body.dark .bg-green-50 { background-color: rgba(6, 78, 59, 0.9); }
+        .bg-yellow-50 { background-color: rgba(254, 243, 199, 0.9); }
+        body.dark .bg-yellow-50 { background-color: rgba(120, 53, 15, 0.9); }
+
+        .text-blue-600 { color: var(--primary); }
+        body.dark .text-blue-600 { color: #93C5FD; }
+        .text-green-600 { color: var(--secondary); }
+        body.dark .text-green-600 { color: #6EE7B7; }
+        .text-yellow-600 { color: var(--accent); }
+        body.dark .text-yellow-600 { color: #FCD34D; }
+
+        /* Water Drops Animation */
+        .water-drops {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .drop {
+            position: absolute;
+            background: var(--bubble-bg);
+            border-radius: 50%;
+            animation: float 12s infinite ease-in-out;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+
+        body.dark .drop {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0.8); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+        }
+
+        /* Navigation Styles */
+        .nav-shadow {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transition: background 0.3s ease;
+        }
+
+        body.dark .nav-shadow {
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-item:hover::after {
+            width: 50%;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover::after {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Card Animations */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-hover:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        body.dark ::-webkit-scrollbar-thumb {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .nav-items {
+                display: none;
+            }
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen">
     <!-- Fondo animado de gotas de agua -->
     <div class="water-drops"></div>
 
-    <!-- Menú desplegable (solo para usuarios autenticados) -->
-    {% if user.is_authenticated %}
-    <nav class="bg-blue-600 bg-opacity-95 p-4 nav-shadow sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-white text-lg font-bold flex items-center">
-                <i class="fas fa-car-wash mr-2 animate-pulse"></i>
-                <span class="hidden md:inline">Lavado Premium</span>
-                <span class="md:hidden">LavaPro</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <!-- Interruptor de tema -->
-                <button id="themeToggle" class="text-white focus:outline-none rounded-full bg-blue-700 p-2 hover:bg-blue-800 transition-all duration-300">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <div class="relative dropdown">
-                    <button id="dropdownButton" class="text-white focus:outline-none flex items-center space-x-2 bg-blue-700 px-3 py-2 rounded-lg hover:bg-blue-800 transition-all duration-300">
-                        <span class="hidden md:inline mr-2">Menú</span>
-                        <i class="fas fa-bars w-4 h-4"></i>
-                    </button>
-                    <div id="dropdownMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10">
-                        <div class="p-2 border-b border-gray-200">
-                            <a href="{% url 'perfiles:dashboard' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
-                                <span>Dashboard</span>
-                            </a>
-                            <a href="{% url 'perfiles:profile' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                <i class="fas fa-user mr-2 text-blue-600"></i>
-                                <span>Mi Perfil</span>
-                            </a>
-                            <!-- Opción del Panel de Admin solo para superusers o staff -->
-                            {% if user.is_superuser or user.is_staff %}
-                            <a href="{% url 'admins:dashboard' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                <i class="fas fa-cogs mr-2 text-blue-600"></i>
-                                <span>Panel de Admin</span>
-                            </a>
-                            {% endif %}
-                        </div>
-
-                        <!-- Sección de Administrador (solo para superusers o staff) -->
-                        {% if user.is_superuser or user.is_staff %}
-                        <div class="p-2 border-b border-gray-200">
-                            <p class="px-2 py-1 text-sm text-gray-500 font-semibold">Administrador</p>
-                            <div class="grid grid-cols-2 gap-1">
-                                <a href="{% url 'secciones:cliente-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-users mr-2 text-blue-600"></i>
-                                    <span>Clientes</span>
-                                </a>
-                                <a href="{% url 'secciones:vehiculo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-car mr-2 text-blue-600"></i>
-                                    <span>Vehículos</span>
-                                </a>
-                                <a href="{% url 'secciones:empleado-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-user-tie mr-2 text-blue-600"></i>
-                                    <span>Empleados</span>
-                                </a>
-                                <a href="{% url 'secciones:jornada-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
-                                    <span>Jornadas</span>
-                                </a>
-                                <a href="{% url 'secciones:turno-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-clock mr-2 text-blue-600"></i>
-                                    <span>Turnos</span>
-                                </a>
-                                <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-pump-soap mr-2 text-blue-600"></i>
-                                    <span>T. Insumos</span>
-                                </a>
-                                <a href="{% url 'secciones:insumo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-spray-can mr-2 text-blue-600"></i>
-                                    <span>Insumos</span>
-                                </a>
-                                <a href="{% url 'secciones:inventario-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-warehouse mr-2 text-blue-600"></i>
-                                    <span>Inventarios</span>
-                                </a>
-                            </div>
-                            <div class="mt-2">
-                                <a href="{% url 'secciones:tipolavado-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-water mr-2 text-blue-600"></i>
-                                    <span>Tipos de Lavado</span>
-                                </a>
-                                <a href="{% url 'secciones:servicio-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-concierge-bell mr-2 text-blue-600"></i>
-                                    <span>Servicios</span>
-                                </a>
-                                <a href="{% url 'secciones:factura-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-file-invoice-dollar mr-2 text-blue-600"></i>
-                                    <span>Facturas</span>
-                                </a>
-                                <a href="{% url 'secciones:cita-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
-                                    <span>Citas</span>
-                                </a>
-                                <a href="{% url 'secciones:promocion-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-percentage mr-2 text-blue-600"></i>
-                                    <span>Promociones</span>
-                                </a>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- Cerrar sesión -->
-                        <div class="p-2 border-t border-gray-200">
-                            <form method="post" action="{% url 'logout' %}" class="block">
-                                {% csrf_token %}
-                                <button type="submit" class="flex items-center p-2 w-full text-left rounded hover:bg-red-100 transition-all text-red-500">
-                                    <i class="fas fa-sign-out-alt mr-2"></i>
-                                    <span>Cerrar Sesión</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-    {% endif %}
+      <!-- Navigation -->
+      {% if user.is_authenticated %}
+      <nav class="nav-shadow sticky top-0 z-50 py-4">
+          <div class="container mx-auto px-4 flex justify-between items-center">
+              <div class="text-2xl font-bold flex items-center">
+                  <i class="fas fa-car-wash mr-2 text-primary animate-pulse"></i>
+                  <span class="hidden md:inline">Lavado Premium</span>
+                  <span class="md:hidden">LavaPro</span>
+              </div>
+              <div class="flex items-center space-x-4">
+                  <!-- Navigation Items -->
+                  <div class="nav-items flex items-center space-x-2">
+                      <a href="{% url 'perfiles:dashboard' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                      </a>
+                      <a href="{% url 'perfiles:profile' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-user mr-2"></i> Perfil
+                      </a>
+                      {% if user.is_superuser or user.is_staff %}
+                      <a href="{% url 'admins:admin_panel' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-cogs mr-2"></i> Admin
+                      </a>
+                      <div class="relative group">
+                          <button class="nav-item text-gray-800 dark:text-gray-200 flex items-center">
+                              <i class="fas fa-tools mr-2"></i> Gestión <i class="fas fa-chevron-down ml-1"></i>
+                          </button>
+                          <div class="absolute hidden group-hover:block bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-2 w-64 z-10">
+                              <div class="p-4 grid grid-cols-2 gap-2">
+                                  <a href="{% url 'secciones:cliente-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-users mr-2 text-blue-600 dark:text-blue-400"></i> Clientes
+                                  </a>
+                                  <a href="{% url 'secciones:vehiculo-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-car mr-2 text-blue-600 dark:text-blue-400"></i> Vehículos
+                                  </a>
+                                  <a href="{% url 'secciones:empleado-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-user-tie mr-2 text-blue-600 dark:text-blue-400"></i> Empleados
+                                  </a>
+                                  <a href="{% url 'secciones:jornada-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-calendar-alt mr-2 text-blue-600 dark:text-blue-400"></i> Jornadas
+                                  </a>
+                                  <a href="{% url 'secciones:turno-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-clock mr-2 text-blue-600 dark:text-blue-400"></i> Turnos
+                                  </a>
+                                  <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-pump-soap mr-2 text-blue-600 dark:text-blue-400"></i> T. Insumos
+                                  </a>
+                                  <a href="{% url 'secciones:insumo-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-spray-can mr-2 text-blue-600 dark:text-blue-400"></i> Insumos
+                                  </a>
+                                  <a href="{% url 'secciones:inventario-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-warehouse mr-2 text-blue-600 dark:text-blue-400"></i> Inventarios
+                                  </a>
+                              </div>
+                              <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                                  <a href="{% url 'secciones:tipolavado-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-water mr-2 text-blue-600 dark:text-blue-400"></i> Tipos de Lavado
+                                  </a>
+                                  <a href="{% url 'secciones:servicio-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-concierge-bell mr-2 text-blue-600 dark:text-blue-400"></i> Servicios
+                                  </a>
+                                  <a href="{% url 'secciones:factura-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-file-invoice-dollar mr-2 text-blue-600 dark:text-blue-400"></i> Facturas
+                                  </a>
+                                  <a href="{% url 'secciones:cita-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-calendar-check mr-2 text-blue-600 dark:text-blue-400"></i> Citas
+                                  </a>
+                                  <a href="{% url 'secciones:promocion-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                      <i class="fas fa-percentage mr-2 text-blue-600 dark:text-blue-400"></i> Promociones
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+                      {% endif %}
+                      <form method="post" action="{% url 'logout' %}" class="inline">
+                          {% csrf_token %}
+                          <button type="submit" class="nav-item text-red-500 dark:text-red-400">
+                              <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                          </button>
+                      </form>
+                  </div>
+                  <!-- Theme Toggle -->
+                  <button id="themeToggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300">
+                      <i class="fas fa-moon text-gray-800 dark:text-gray-200"></i>
+                  </button>
+                  <!-- Mobile Menu Toggle -->
+                  <button id="mobileMenuToggle" class="mobile-menu-toggle p-2 rounded-lg bg-primary text-white hover:bg-primary-dark">
+                      <i class="fas fa-bars"></i>
+                  </button>
+              </div>
+          </div>
+          <!-- Mobile Menu -->
+          <div id="mobileMenu" class="hidden nav-shadow mt-2 p-4">
+              <div class="flex flex-col space-y-2">
+                  <a href="{% url 'perfiles:dashboard' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                      <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                  </a>
+                  <a href="{% url 'perfiles:profile' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                      <i class="fas fa-user mr-2"></i> Perfil
+                  </a>
+                  {% if user.is_superuser or user.is_staff %}
+                  <a href="{% url 'admins:admin_panel' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                      <i class="fas fa-cogs mr-2"></i> Admin
+                  </a>
+                  <div class="flex flex-col space-y-2 pl-4">
+                      <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold">Gestión</p>
+                      <a href="{% url 'secciones:cliente-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-users mr-2"></i> Clientes
+                      </a>
+                      <a href="{% url 'secciones:vehiculo-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-car mr-2"></i> Vehículos
+                      </a>
+                      <a href="{% url 'secciones:empleado-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-user-tie mr-2"></i> Empleados
+                      </a>
+                      <a href="{% url 'secciones:jornada-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-calendar-alt mr-2"></i> Jornadas
+                      </a>
+                      <a href="{% url 'secciones:turno-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-clock mr-2"></i> Turnos
+                      </a>
+                      <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-pump-soap mr-2"></i> T. Insumos
+                      </a>
+                      <a href="{% url 'secciones:insumo-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-spray-can mr-2"></i> Insumos
+                      </a>
+                      <a href="{% url 'secciones:inventario-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-warehouse mr-2"></i> Inventarios
+                      </a>
+                      <a href="{% url 'secciones:tipolavado-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-water mr-2"></i> Tipos de Lavado
+                      </a>
+                      <a href="{% url 'secciones:servicio-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-concierge-bell mr-2"></i> Servicios
+                      </a>
+                      <a href="{% url 'secciones:factura-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-file-invoice-dollar mr-2"></i> Facturas
+                      </a>
+                      <a href="{% url 'secciones:cita-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-calendar-check mr-2"></i> Citas
+                      </a>
+                      <a href="{% url 'secciones:promocion-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                          <i class="fas fa-percentage mr-2"></i> Promociones
+                      </a>
+                  </div>
+                  {% endif %}
+                  <form method="post" action="{% url 'logout' %}" class="inline">
+                      {% csrf_token %}
+                      <button type="submit" class="nav-item text-red-500 dark:text-red-400">
+                          <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                      </button>
+                  </form>
+              </div>
+          </div>
+      </nav>
+      {% endif %}
 
     <!-- Contenido de la página -->
     <div class="container mx-auto mt-8 px-4">
@@ -545,21 +818,31 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Toggle del menú desplegable
-            const dropdownButton = document.getElementById('dropdownButton');
-            const dropdownMenu = document.getElementById('dropdownMenu');
-            if (dropdownButton && dropdownMenu) {
-                dropdownButton.addEventListener('click', function() {
-                    dropdownMenu.classList.toggle('hidden');
-                    dropdownMenu.classList.toggle('show');
-                });
-                document.addEventListener('click', function(event) {
-                    if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                        dropdownMenu.classList.add('hidden');
-                        dropdownMenu.classList.remove('show');
-                    }
-                });
+            // Gestión del menú desplegable
+    const gestionButton = document.querySelector('.nav-item:has(.fa-tools)');
+    const gestionMenu = document.querySelector('.group .absolute');
+    
+    if (gestionButton && gestionMenu) {
+        // Control de clic para mostrar/ocultar el menú
+        gestionButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            gestionMenu.classList.toggle('hidden');
+        });
+        
+        // Cerrar el menú cuando se hace clic fuera
+        document.addEventListener('click', function(e) {
+            if (!gestionButton.contains(e.target) && !gestionMenu.contains(e.target)) {
+                gestionMenu.classList.add('hidden');
             }
+        });
+        
+        // Soporte para tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !gestionMenu.classList.contains('hidden')) {
+                gestionMenu.classList.add('hidden');
+            }
+        });
+    }
 
             // Toggle de tema claro/oscuro
             const themeToggle = document.getElementById('themeToggle');

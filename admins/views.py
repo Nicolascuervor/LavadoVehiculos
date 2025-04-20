@@ -1,493 +1,565 @@
-# admins/views.py
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render, redirect, get_object_or_404
+# perfiles/views.py
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth import login
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from perfiles.models import UserProfile, EmployeeRequest
-from secciones.models import (
-    Cliente, Vehiculo, Empleado, Jornada, TurnoEmpleado, TipoInsumo, Insumo,
-    Inventario, TipoLavado, Servicio, ConsumoInsumo, Factura, Cita,
-    Promocion, CargaTrabajoEmpleado
+from functools import wraps
+from .forms import (
+    UserRegisterForm, UserUpdateForm, ProfileUpdateForm, ClienteUpdateForm,
+    AdminUserForm, AdminUserUpdateForm, AdminUserProfileForm, AdminClienteForm,
+    AdminVehiculoForm, AdminCitaForm, AdminServicioForm, AdminEmpleadoForm,
+    AdminEmployeeRequestForm
 )
+from perfiles.models import UserProfile, EmployeeRequest, ActivityLog
+from secciones.models import Cita, Servicio, Vehiculo, Cliente, Empleado
+from secciones.forms import VehiculoForm
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Sum
-from datetime import date
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-
-
+# Decorador para restringir acceso a administradores
 def admin_required(view_func):
-    def decorated_view(request, *args, **kwargs):
-        # Lógica para verificar si el usuario es admin
-        if not request.user.is_authenticated or not request.user.is_staff:
-            return redirect('login')  # O alguna otra página
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        try:
+            user_profile = request.user.profile
+            if user_profile.role != 'admin':
+                messages.error(request, 'No tienes permiso para acceder a esta sección.')
+                return redirect('perfiles:dashboard')
+        except UserProfile.DoesNotExist:
+            messages.error(request, 'No tienes un perfil asociado. Contacta al administrador.')
+            return redirect('perfiles:dashboard')
         return view_func(request, *args, **kwargs)
-    return decorated_view
+    return wrapper
 
+# Vistas existentes (mantenidas como están, con ajustes menores)
+def custom_404(request, exception):
+    return render(request, 'perfiles/404.html', status=404)
 
+def custom_500(request):
+    return render(request, 'perfiles/500.html', status=500)
 
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            print("Usuario creado:", user.username)
+            try:
+                user_profile, created = UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={'role': 'cliente'}
+                )
+                print("UserProfile creado o recuperado:", user_profile)
+                if Cliente.objects.filter(identificacion=form.cleaned_data['identification']).exists():
+                    messages.error(request, 'El identificador ya está en uso.')
+                    print("Error: Identificador ya en uso:", form.cleaned_data['identification'])
+                    return render(request, 'perfiles/register.html', {'form': form})
+                cliente = Cliente.objects.create(
+                    usuario=user,
+                    nombre=form.cleaned_data['first_name'] or 'Nombre',
+                    apellido=form.cleaned_data['last_name'] or 'Apellido',
+                    email=form.cleaned_data['email'],
+                    identificacion=form.cleaned_data['identification'],
+                    telefono=form.cleaned_data['telefono'],
+                )
+                print("Cliente creado manualmente:", cliente)
+                login(request, user)
+                messages.success(request, '¡Tu cuenta ha sido creada! Ahora puedes iniciar sesión.')
+                return redirect('perfiles:dashboard')
+            except Exception as e:
+                print("Error al crear UserProfile o Cliente:", str(e))
+                messages.error(request, f'Error al registrar: {str(e)}')
+                return render(request, 'perfiles/register.html', {'form': form})
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = UserRegisterForm()
+    return render(request, 'perfiles/register.html', {'form': form})
 
-def admin_dashboard(request):
-    # Obtener la fecha actual
-    today = date.today()
+@login_required
+def profile(request):
+    try:
+        cliente = Cliente.objects.get(usuario=request.user)
+    except Cliente.DoesNotExist:
+        messages.error(request, 'No tienes un cliente asociado. Contacta al administrador.')
+        return redirect('perfiles:dashboard')
 
-    # Total de Clientes Activos
-    total_clientes = Cliente.objects.filter(estado='A').count() or 0
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=request.user, role='cliente')
+        if not Cliente.objects.filter(usuario=request.user).exists():
+            Cliente.objects.create(
+                usuario=request.user,
+                nombre=request.user.first_name or 'Nombre',
+                apellido=request.user.last_name or 'Apellido',
+                email=request.user.email,
+                identificacion=request.user.username,
+                telefono='',
+            )
 
-    # Servicios Hoy (servicios completados o en proceso hoy)
-    servicios_hoy = Servicio.objects.filter(fecha=today).count()
+    vehiculos = Vehiculo.objects.filter(usuario=request.user, cliente=cliente, estado='A')
+    vehiculo_form = VehiculoForm()
+    MAX_VEHICULOS = 10
+    puede_agregar = len(vehiculos) < MAX_VEHICULOS
 
-    # Ingresos Hoy (suma de facturas pagadas hoy)
-    ingresos_hoy = Factura.objects.filter(
-        fecha_emision=today,
-        estado='P'  # Pagada
-    ).aggregate(Sum('total'))['total__sum'] or 0
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        photo_form = ProfileUpdateForm(request.POST, request.FILES, instance=user_profile)
+        cliente_form = ClienteUpdateForm(request.POST, instance=cliente)
 
-    # Total de Empleados Activos
-    total_empleados = Empleado.objects.filter(estado='A').count()
+        if 'action' in request.POST:
+            action = request.POST.get('action')
+            vehiculo_id = request.POST.get('vehiculo_id')
+
+            if action == 'create' and puede_agregar:
+                vehiculo_form = VehiculoForm(request.POST)
+                if vehiculo_form.is_valid():
+                    vehiculo = vehiculo_form.save(commit=False)
+                    vehiculo.usuario = request.user
+                    vehiculo.cliente = cliente
+                    vehiculo.estado = 'A'
+                    vehiculo.save()
+                    messages.success(request, 'Vehículo registrado con éxito.')
+                    return redirect('perfiles:profile')
+
+            elif action == 'update' and vehiculo_id:
+                vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id, usuario=request.user, cliente=cliente)
+                vehiculo_form = VehiculoForm(request.POST, instance=vehiculo)
+                if vehiculo_form.is_valid():
+                    vehiculo_form.save()
+                    messages.success(request, 'Vehículo actualizado con éxito.')
+                    return redirect('perfiles:profile')
+
+            elif action == 'delete' and vehiculo_id:
+                vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id, usuario=request.user, cliente=cliente)
+                vehiculo.estado = 'I'
+                vehiculo.save()
+                messages.success(request, 'Vehículo marcado como inactivo.')
+                return redirect('perfiles:profile')
+
+        if user_form.is_valid() and photo_form.is_valid() and cliente_form.is_valid():
+            user_form.save()
+            photo_form.save()
+            cliente_form.save()
+            messages.success(request, '¡Tu perfil ha sido actualizado con éxito!')
+            return redirect('perfiles:profile')
+        else:
+            messages.error(request, 'Error al actualizar el perfil. Por favor, revisa los campos.')
+    
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        photo_form = ProfileUpdateForm(instance=user_profile)
+        cliente_form = ClienteUpdateForm(instance=cliente)
 
     context = {
-        'total_clientes': total_clientes,
-        'servicios_hoy': servicios_hoy,
-        'ingresos_hoy': ingresos_hoy,
-        'total_empleados': total_empleados,
+        'user_form': user_form,
+        'photo_form': photo_form,
+        'cliente_form': cliente_form,
+        'vehiculos': vehiculos,
+        'vehiculo_form': vehiculo_form,
+        'puede_agregar': puede_agregar,
     }
-    return render(request, 'admins/dashboard.html', context)
+    return render(request, 'perfiles/profile.html', context)
 
-# Dashboard
-@admin_required
+@login_required
 def dashboard(request):
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=request.user, role='cliente')
+        if not Cliente.objects.filter(usuario=request.user).exists():
+            Cliente.objects.create(
+                usuario=request.user,
+                nombre=request.user.first_name or 'Nombre',
+                apellido=request.user.last_name or 'Apellido',
+                email=request.user.email,
+                identificacion=request.user.username,
+                telefono='',
+            )
+
+    citas_pendientes = 0
+    servicios_completados = 0
+    vehiculos_atendidos = 0
+
+    if user_profile.role == 'cliente':
+        try:
+            cliente = Cliente.objects.get(usuario=request.user)
+            citas_pendientes = Cita.objects.filter(cliente=cliente, estado='pendiente').count()
+            servicios_completados = Servicio.objects.filter(cita__cliente=cliente, estado='completado').count()
+            vehiculos_atendidos = Vehiculo.objects.filter(usuario=request.user, estado='A').count()
+        except Cliente.DoesNotExist:
+            messages.warning(request, 'No tienes un cliente asociado. Contacta al administrador.')
+            citas_pendientes = 0
+            servicios_completados = 0
+            vehiculos_atendidos = 0
+    elif user_profile.role == 'admin':
+        citas_pendientes = Cita.objects.filter(estado='pendiente').count()
+        servicios_completados = Servicio.objects.filter(estado='completado').count()
+        vehiculos_atendidos = Vehiculo.objects.filter(estado='A').count()
+    else:
+        citas_pendientes = Cita.objects.filter(estado='pendiente').count()
+        servicios_completados = Servicio.objects.filter(estado='completado').count()
+        vehiculos_atendidos = Vehiculo.objects.filter(estado='A').count()
+
     context = {
-        'title': 'Panel de Administración',
+        'user': request.user,
+        'citas_pendientes': citas_pendientes,
+        'servicios_completados': servicios_completados,
+        'vehiculos_atendidos': vehiculos_atendidos,
     }
-    return render(request, 'admins/dashboard.html', context)
+    return render(request, 'perfiles/dashboard.html', context)
 
-# Gestión de Usuarios (User y UserProfile)
+# Nuevas vistas para el Superpanel Administrativo
 @admin_required
-def user_list(request):
+def admin_panel(request):
+    # Estadísticas para el dashboard
+    total_users = User.objects.count()
+    total_clientes = Cliente.objects.count()
+    total_vehiculos = Vehiculo.objects.count()
+    total_citas = Cita.objects.count()
+    total_servicios = Servicio.objects.count()
+    total_empleados = Empleado.objects.count()
+    recent_activities = ActivityLog.objects.order_by('-timestamp')[:10]
+
+    context = {
+        'total_users': total_users,
+        'total_clientes': total_clientes,
+        'total_vehiculos': total_vehiculos,
+        'total_citas': total_citas,
+        'total_servicios': total_servicios,
+        'total_empleados': total_empleados,
+        'recent_activities': recent_activities,
+    }
+    return render(request, 'admins/admin_panel.html', context)
+
+# CRUD para User
+@admin_required
+def admin_user_list(request):
     users = User.objects.all()
-    return render(request, 'admins/user_list.html', {'users': users, 'title': 'Lista de Usuarios'})
+    return render(request, 'admins/admin_user_list.html', {'users': users})
 
 @admin_required
-def user_detail(request, pk):
+def admin_user_create(request):
+    if request.method == 'POST':
+        form = AdminUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, 'Usuario creado con éxito.')
+            return redirect('admins:admin_user_list')
+    else:
+        form = AdminUserForm()
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Crear Usuario'})
+
+@admin_required
+def admin_user_edit(request, pk):
     user = get_object_or_404(User, pk=pk)
-    profile = user.profile if hasattr(user, 'profile') else None
-    return render(request, 'admins/user_detail.html', {'user': user, 'profile': profile, 'title': f'Detalles de {user.username}'})
+    if request.method == 'POST':
+        form = AdminUserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario actualizado con éxito.')
+            return redirect('admins:admin_user_list')
+    else:
+        form = AdminUserUpdateForm(instance=user)
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Editar Usuario'})
 
 @admin_required
-def user_delete(request, pk):
+def admin_user_delete(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
         user.delete()
-        messages.success(request, f'Usuario {user.username} eliminado con éxito.')
-        return redirect('admins:user_list')
-    return render(request, 'admins/user_confirm_delete.html', {'user': user, 'title': f'Eliminar {user.username}'})
+        messages.success(request, 'Usuario eliminado con éxito.')
+        return redirect('perfiles:admin_user_list')
+    return render(request, 'perfiles/admin_confirm_delete.html', {'object': user, 'title': 'Eliminar Usuario'})
 
-# Gestión de Solicitudes de Empleados
+# CRUD para UserProfile
 @admin_required
-def employee_request_list(request):
-    requests = EmployeeRequest.objects.all()
-    return render(request, 'admins/employee_request_list.html', {'requests': requests, 'title': 'Lista de Solicitudes de Empleados'})
+def admin_userprofile_list(request):
+    userprofiles = UserProfile.objects.all()
+    return render(request, 'admins/admin_userprofile_list.html', {'userprofiles': userprofiles})
 
 @admin_required
-def employee_request_detail(request, pk):
-    employee_request = get_object_or_404(EmployeeRequest, pk=pk)
+def admin_userprofile_create(request):
     if request.method == 'POST':
-        status = request.POST.get('status')
-        if status in ['approved', 'rejected']:
-            employee_request.status = status
-            employee_request.save()
-            messages.success(request, f'Solicitud actualizada a {status}.')
-            return redirect('admins:employee_request_list')
-    return render(request, 'admins/employee_request_detail.html', {'employee_request': employee_request, 'title': f'Solicitud de {employee_request.user.username}'})
+        form = AdminUserProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            userprofile = form.save()
+            messages.success(request, 'Perfil de usuario creado con éxito.')
+            return redirect('admins:admin_userprofile_list')
+    else:
+        form = AdminUserProfileForm()
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Crear Perfil de Usuario'})
 
-# Gestión de Clientes
 @admin_required
-def cliente_list(request):
+def admin_userprofile_edit(request, pk):
+    userprofile = get_object_or_404(UserProfile, pk=pk)
+    if request.method == 'POST':
+        form = AdminUserProfileForm(request.POST, request.FILES, instance=userprofile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil de usuario actualizado con éxito.')
+            return redirect('admins:admin_userprofile_list')
+    else:
+        form = AdminUserProfileForm(instance=userprofile)
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Editar Perfil de Usuario'})
+
+@admin_required
+def admin_userprofile_delete(request, pk):
+    userprofile = get_object_or_404(UserProfile, pk=pk)
+    if request.method == 'POST':
+        userprofile.delete()
+        messages.success(request, 'Perfil de usuario eliminado con éxito.')
+        return redirect('admins:admin_userprofile_list')
+    return render(request, 'admins/admin_confirm_delete.html', {'object': userprofile, 'title': 'Eliminar Perfil de Usuario'})
+
+# CRUD para Cliente
+@admin_required
+def admin_cliente_list(request):
     clientes = Cliente.objects.all()
-    return render(request, 'admins/cliente_list.html', {'clientes': clientes, 'title': 'Lista de Clientes'})
-
-
-# Gestión de vehiculos
-@admin_required
-def vehiculo_list(request):
-    vehiculos = Vehiculo.objects.all()
-    return render(request, 'admins/vehiculo_list.html', {'vehiculos': vehiculos, 'title': 'Lista de vehiculos'})
-
-
-
-# Gestión de vehiculos
-@admin_required
-def service_list(request):
-    services = Servicio.objects.all()
-    return render(request, 'admins/servicio_list.html', {'servicios': services, 'title': 'Lista de vehiculos'})
-
-def reports_dashboard(request):
-    # Obtener la fecha actual
-    today = date.today()
-
-    # Total de Clientes Activos
-    total_clientes = Cliente.objects.filter(estado='A').count() or 0
-
-    # Servicios Hoy (servicios completados o en proceso hoy)
-    servicios_hoy = Servicio.objects.filter(fecha=today).count()
-
-    # Ingresos Hoy (suma de facturas pagadas hoy)
-    ingresos_hoy = Factura.objects.filter(
-        fecha_emision=today,
-        estado='P'  # Pagada
-    ).aggregate(Sum('total'))['total__sum'] or 0
-
-    # Total de Empleados Activos
-    total_empleados = Empleado.objects.filter(estado='A').count()
-
-    context = {
-        'total_clientes': total_clientes,
-        'servicios_hoy': servicios_hoy,
-        'ingresos_hoy': ingresos_hoy,
-        'total_empleados': total_empleados,
-    }
-    return render(request, 'admins/reports_dashboard.html', context)
-
+    return render(request, 'admins/admin_cliente_list.html', {'clientes': clientes})
 
 @admin_required
-def cliente_detail(request, pk):
+def admin_cliente_create(request):
+    if request.method == 'POST':
+        form = AdminClienteForm(request.POST)
+        if form.is_valid():
+            cliente = form.save()
+            messages.success(request, 'Cliente creado con éxito.')
+            return redirect('admins:admin_cliente_list')
+    else:
+        form = AdminClienteForm()
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Crear Cliente'})
+
+@admin_required
+def admin_cliente_edit(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
-    return render(request, 'admins/cliente_detail.html', {'cliente': cliente, 'title': f'Detalles de Cliente {cliente.id}'})
+    if request.method == 'POST':
+        form = AdminClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cliente actualizado con éxito.')
+            return redirect('admins:admin_cliente_list')
+    else:
+        form = AdminClienteForm(instance=cliente)
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Editar Cliente'})
 
 @admin_required
-def cliente_delete(request, pk):
+def admin_cliente_delete(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
         cliente.delete()
         messages.success(request, 'Cliente eliminado con éxito.')
-        return redirect('admins:cliente_list')
-    return render(request, 'admins/cliente_confirm_delete.html', {'cliente': cliente, 'title': f'Eliminar Cliente {cliente.id}'})
+        return redirect('admins:admin_cliente_list')
+    return render(request, 'admins/admin_confirm_delete.html', {'object': cliente, 'title': 'Eliminar Cliente'})
 
-# Gestión de Vehículos
+# CRUD para Vehiculo
 @admin_required
-def vehiculo_list(request):
+def admin_vehiculo_list(request):
     vehiculos = Vehiculo.objects.all()
-    return render(request, 'admins/vehiculo_list.html', {'vehiculos': vehiculos, 'title': 'Lista de Vehículos'})
+    return render(request, 'admins/admin_vehiculo_list.html', {'vehiculos': vehiculos})
 
 @admin_required
-def vehiculo_detail(request, pk):
+def admin_vehiculo_create(request):
+    if request.method == 'POST':
+        form = AdminVehiculoForm(request.POST)
+        if form.is_valid():
+            vehiculo = form.save()
+            messages.success(request, 'Vehículo creado con éxito.')
+            return redirect('admins:admin_vehiculo_list')
+    else:
+        form = AdminVehiculoForm()
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Crear Vehículo'})
+
+@admin_required
+def admin_vehiculo_edit(request, pk):
     vehiculo = get_object_or_404(Vehiculo, pk=pk)
-    return render(request, 'admins/vehiculo_detail.html', {'vehiculo': vehiculo, 'title': f'Detalles de Vehículo {vehiculo.id}'})
+    if request.method == 'POST':
+        form = AdminVehiculoForm(request.POST, instance=vehiculo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Vehículo actualizado con éxito.')
+            return redirect('admins:admin_vehiculo_list')
+    else:
+        form = AdminVehiculoForm(instance=vehiculo)
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Editar Vehículo'})
 
 @admin_required
-def vehiculo_delete(request, pk):
+def admin_vehiculo_delete(request, pk):
     vehiculo = get_object_or_404(Vehiculo, pk=pk)
     if request.method == 'POST':
         vehiculo.delete()
         messages.success(request, 'Vehículo eliminado con éxito.')
-        return redirect('admins:vehiculo_list')
-    return render(request, 'admins/vehiculo_confirm_delete.html', {'vehiculo': vehiculo, 'title': f'Eliminar Vehículo {vehiculo.id}'})
+        return redirect('admins:admin_vehiculo_list')
+    return render(request, 'admins/admin_confirm_delete.html', {'object': vehiculo, 'title': 'Eliminar Vehículo'})
 
-# Gestión de Empleados
+# CRUD para Cita
 @admin_required
-def empleado_list(request):
-    empleados = Empleado.objects.all()
-    return render(request, 'admins/empleado_list.html', {'empleados': empleados, 'title': 'Lista de Empleados'})
-
-@admin_required
-def empleado_detail(request, pk):
-    empleado = get_object_or_404(Empleado, pk=pk)
-    return render(request, 'admins/empleado_detail.html', {'empleado': empleado, 'title': f'Detalles de Empleado {empleado.id}'})
-
-@admin_required
-def empleado_delete(request, pk):
-    empleado = get_object_or_404(Empleado, pk=pk)
-    if request.method == 'POST':
-        empleado.delete()
-        messages.success(request, 'Empleado eliminado con éxito.')
-        return redirect('admins:empleado_list')
-    return render(request, 'admins/empleado_confirm_delete.html', {'empleado': empleado, 'title': f'Eliminar Empleado {empleado.id}'})
-
-# Gestión de Jornadas
-@admin_required
-def jornada_list(request):
-    jornadas = Jornada.objects.all()
-    return render(request, 'admins/jornada_list.html', {'jornadas': jornadas, 'title': 'Lista de Jornadas'})
-
-@admin_required
-def jornada_detail(request, pk):
-    jornada = get_object_or_404(Jornada, pk=pk)
-    return render(request, 'admins/jornada_detail.html', {'jornada': jornada, 'title': f'Detalles de Jornada {jornada.id}'})
-
-@admin_required
-def jornada_delete(request, pk):
-    jornada = get_object_or_404(Jornada, pk=pk)
-    if request.method == 'POST':
-        jornada.delete()
-        messages.success(request, 'Jornada eliminada con éxito.')
-        return redirect('admins:jornada_list')
-    return render(request, 'admins/jornada_confirm_delete.html', {'jornada': jornada, 'title': f'Eliminar Jornada {jornada.id}'})
-
-# Gestión de Turnos
-@admin_required
-def turno_list(request):
-    turnos = TurnoEmpleado.objects.all()
-    return render(request, 'admins/turno_list.html', {'turnos': turnos, 'title': 'Lista de Turnos'})
-
-@admin_required
-def turno_detail(request, pk):
-    turno = get_object_or_404(TurnoEmpleado, pk=pk)
-    return render(request, 'admins/turno_detail.html', {'turno': turno, 'title': f'Detalles de Turno {turno.id}'})
-
-@admin_required
-def turno_delete(request, pk):
-    turno = get_object_or_404(TurnoEmpleado, pk=pk)
-    if request.method == 'POST':
-        turno.delete()
-        messages.success(request, 'Turno eliminado con éxito.')
-        return redirect('admins:turno_list')
-    return render(request, 'admins/turno_confirm_delete.html', {'turno': turno, 'title': f'Eliminar Turno {turno.id}'})
-
-# Gestión de Tipos de Insumo
-@admin_required
-def tipo_insumo_list(request):
-    tipos_insumo = TipoInsumo.objects.all()
-    return render(request, 'admins/tipo_insumo_list.html', {'tipos_insumo': tipos_insumo, 'title': 'Lista de Tipos de Insumo'})
-
-@admin_required
-def tipo_insumo_detail(request, pk):
-    tipo_insumo = get_object_or_404(TipoInsumo, pk=pk)
-    return render(request, 'admins/tipo_insumo_detail.html', {'tipo_insumo': tipo_insumo, 'title': f'Detalles de Tipo de Insumo {tipo_insumo.id}'})
-
-@admin_required
-def tipo_insumo_delete(request, pk):
-    tipo_insumo = get_object_or_404(TipoInsumo, pk=pk)
-    if request.method == 'POST':
-        tipo_insumo.delete()
-        messages.success(request, 'Tipo de Insumo eliminado con éxito.')
-        return redirect('admins:tipo_insumo_list')
-    return render(request, 'admins/tipo_insumo_confirm_delete.html', {'tipo_insumo': tipo_insumo, 'title': f'Eliminar Tipo de Insumo {tipo_insumo.id}'})
-
-# Gestión de Insumos
-@admin_required
-def insumo_list(request):
-    insumos = Insumo.objects.all()
-    return render(request, 'admins/insumo_list.html', {'insumos': insumos, 'title': 'Lista de Insumos'})
-
-@admin_required
-def insumo_detail(request, pk):
-    insumo = get_object_or_404(Insumo, pk=pk)
-    return render(request, 'admins/insumo_detail.html', {'insumo': insumo, 'title': f'Detalles de Insumo {insumo.id}'})
-
-@admin_required
-def insumo_delete(request, pk):
-    insumo = get_object_or_404(Insumo, pk=pk)
-    if request.method == 'POST':
-        insumo.delete()
-        messages.success(request, 'Insumo eliminado con éxito.')
-        return redirect('admins:insumo_list')
-    return render(request, 'admins/insumo_confirm_delete.html', {'insumo': insumo, 'title': f'Eliminar Insumo {insumo.id}'})
-
-# Gestión de Inventarios
-@admin_required
-def inventario_list(request):
-    inventarios = Inventario.objects.all()
-    return render(request, 'admins/inventario_list.html', {'inventarios': inventarios, 'title': 'Lista de Inventarios'})
-
-@admin_required
-def inventario_detail(request, pk):
-    inventario = get_object_or_404(Inventario, pk=pk)
-    return render(request, 'admins/inventario_detail.html', {'inventario': inventario, 'title': f'Detalles de Inventario {inventario.id}'})
-
-@admin_required
-def inventario_delete(request, pk):
-    inventario = get_object_or_404(Inventario, pk=pk)
-    if request.method == 'POST':
-        inventario.delete()
-        messages.success(request, 'Inventario eliminado con éxito.')
-        return redirect('admins:inventario_list')
-    return render(request, 'admins/inventario_confirm_delete.html', {'inventario': inventario, 'title': f'Eliminar Inventario {inventario.id}'})
-
-# Gestión de Tipos de Lavado
-@admin_required
-def tipo_lavado_list(request):
-    tipos_lavado = TipoLavado.objects.all()
-    return render(request, 'admins/tipo_lavado_list.html', {'tipos_lavado': tipos_lavado, 'title': 'Lista de Tipos de Lavado'})
-
-@admin_required
-def tipo_lavado_detail(request, pk):
-    tipo_lavado = get_object_or_404(TipoLavado, pk=pk)
-    return render(request, 'admins/tipo_lavado_detail.html', {'tipo_lavado': tipo_lavado, 'title': f'Detalles de Tipo de Lavado {tipo_lavado.id}'})
-
-@admin_required
-def tipo_lavado_delete(request, pk):
-    tipo_lavado = get_object_or_404(TipoLavado, pk=pk)
-    if request.method == 'POST':
-        tipo_lavado.delete()
-        messages.success(request, 'Tipo de Lavado eliminado con éxito.')
-        return redirect('admins:tipo_lavado_list')
-    return render(request, 'admins/tipo_lavado_confirm_delete.html', {'tipo_lavado': tipo_lavado, 'title': f'Eliminar Tipo de Lavado {tipo_lavado.id}'})
-
-# Gestión de Servicios
-@admin_required
-def servicio_list(request):
-    servicios = Servicio.objects.all()
-    return render(request, 'admins/servicio_list.html', {'servicios': servicios, 'title': 'Lista de Servicios'})
-
-@admin_required
-def servicio_detail(request, pk):
-    servicio = get_object_or_404(Servicio, pk=pk)
-    return render(request, 'admins/servicio_detail.html', {'servicio': servicio, 'title': f'Detalles de Servicio {servicio.id}'})
-
-@admin_required
-def servicio_delete(request, pk):
-    servicio = get_object_or_404(Servicio, pk=pk)
-    if request.method == 'POST':
-        servicio.delete()
-        messages.success(request, 'Servicio eliminado con éxito.')
-        return redirect('admins:servicio_list')
-    return render(request, 'admins/servicio_confirm_delete.html', {'servicio': servicio, 'title': f'Eliminar Servicio {servicio.id}'})
-
-# Gestión de Consumos de Insumo
-@admin_required
-def consumo_insumo_list(request):
-    consumos = ConsumoInsumo.objects.all()
-    return render(request, 'admins/consumo_insumo_list.html', {'consumos': consumos, 'title': 'Lista de Consumos de Insumo'})
-
-@admin_required
-def consumo_insumo_detail(request, pk):
-    consumo = get_object_or_404(ConsumoInsumo, pk=pk)
-    return render(request, 'admins/consumo_insumo_detail.html', {'consumo': consumo, 'title': f'Detalles de Consumo de Insumo {consumo.id}'})
-
-@admin_required
-def consumo_insumo_delete(request, pk):
-    consumo = get_object_or_404(ConsumoInsumo, pk=pk)
-    if request.method == 'POST':
-        consumo.delete()
-        messages.success(request, 'Consumo de Insumo eliminado con éxito.')
-        return redirect('admins:consumo_insumo_list')
-    return render(request, 'admins/consumo_insumo_confirm_delete.html', {'consumo': consumo, 'title': f'Eliminar Consumo de Insumo {consumo.id}'})
-
-# Gestión de Facturas
-@admin_required
-def factura_list(request):
-    facturas = Factura.objects.all()
-    return render(request, 'admins/factura_list.html', {'facturas': facturas, 'title': 'Lista de Facturas'})
-
-@admin_required
-def factura_detail(request, pk):
-    factura = get_object_or_404(Factura, pk=pk)
-    return render(request, 'admins/factura_detail.html', {'factura': factura, 'title': f'Detalles de Factura {factura.id}'})
-
-@admin_required
-def factura_delete(request, pk):
-    factura = get_object_or_404(Factura, pk=pk)
-    if request.method == 'POST':
-        factura.delete()
-        messages.success(request, 'Factura eliminada con éxito.')
-        return redirect('admins:factura_list')
-    return render(request, 'admins/factura_confirm_delete.html', {'factura': factura, 'title': f'Eliminar Factura {factura.id}'})
-
-# Gestión de Citas
-@admin_required
-def cita_list(request):
+def admin_cita_list(request):
     citas = Cita.objects.all()
-    return render(request, 'admins/cita_list.html', {'citas': citas, 'title': 'Lista de Citas'})
+    return render(request, 'perfiles/admin_cita_list.html', {'citas': citas})
 
 @admin_required
-def cita_detail(request, pk):
+def admin_cita_create(request):
+    if request.method == 'POST':
+        form = AdminCitaForm(request.POST)
+        if form.is_valid():
+            cita = form.save()
+            messages.success(request, 'Cita creada con éxito.')
+            return redirect('admins:admin_cita_list')
+    else:
+        form = AdminCitaForm()
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Crear Cita'})
+
+@admin_required
+def admin_cita_edit(request, pk):
     cita = get_object_or_404(Cita, pk=pk)
-    return render(request, 'admins/cita_detail.html', {'cita': cita, 'title': f'Detalles de Cita {cita.id}'})
+    if request.method == 'POST':
+        form = AdminCitaForm(request.POST, instance=cita)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cita actualizada con éxito.')
+            return redirect('admins:admin_cita_list')
+    else:
+        form = AdminCitaForm(instance=cita)
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Editar Cita'})
 
 @admin_required
-def cita_delete(request, pk):
+def admin_cita_delete(request, pk):
     cita = get_object_or_404(Cita, pk=pk)
     if request.method == 'POST':
         cita.delete()
         messages.success(request, 'Cita eliminada con éxito.')
-        return redirect('admins:cita_list')
-    return render(request, 'admins/cita_confirm_delete.html', {'cita': cita, 'title': f'Eliminar Cita {cita.id}'})
+        return redirect('admins:admin_cita_list')
+    return render(request, 'admins/admin_confirm_delete.html', {'object': cita, 'title': 'Eliminar Cita'})
 
-# Gestión de Promociones
+# CRUD para Servicio
 @admin_required
-def promocion_list(request):
-    promociones = Promocion.objects.all()
-    return render(request, 'admins/promocion_list.html', {'promociones': promociones, 'title': 'Lista de Promociones'})
-
-@admin_required
-def promocion_detail(request, pk):
-    promocion = get_object_or_404(Promocion, pk=pk)
-    return render(request, 'admins/promocion_detail.html', {'promocion': promocion, 'title': f'Detalles de Promoción {promocion.id}'})
+def admin_servicio_list(request):
+    servicios = Servicio.objects.all()
+    return render(request, 'admins/admin_servicio_list.html', {'servicios': servicios})
 
 @admin_required
-def promocion_delete(request, pk):
-    promocion = get_object_or_404(Promocion, pk=pk)
+def admin_servicio_create(request):
     if request.method == 'POST':
-        promocion.delete()
-        messages.success(request, 'Promoción eliminada con éxito.')
-        return redirect('admins:promocion_list')
-    return render(request, 'admins/promocion_confirm_delete.html', {'promocion': promocion, 'title': f'Eliminar Promoción {promocion.id}'})
-
-# Gestión de Carga de Trabajo
-@admin_required
-def carga_trabajo_list(request):
-    cargas = CargaTrabajoEmpleado.objects.all()
-    return render(request, 'admins/carga_trabajo_list.html', {'cargas': cargas, 'title': 'Lista de Cargas de Trabajo'})
+        form = AdminServicioForm(request.POST)
+        if form.is_valid():
+            servicio = form.save()
+            messages.success(request, 'Servicio creado con éxito.')
+            return redirect('admins:admin_servicio_list')
+    else:
+        form = AdminServicioForm()
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Crear Servicio'})
 
 @admin_required
-def carga_trabajo_detail(request, pk):
-    carga = get_object_or_404(CargaTrabajoEmpleado, pk=pk)
-    return render(request, 'admins/carga_trabajo_detail.html', {'carga': carga, 'title': f'Detalles de Carga de Trabajo {carga.id}'})
-
-@admin_required
-def carga_trabajo_delete(request, pk):
-    carga = get_object_or_404(CargaTrabajoEmpleado, pk=pk)
+def admin_servicio_edit(request, pk):
+    servicio = get_object_or_404(Servicio, pk=pk)
     if request.method == 'POST':
-        carga.delete()
-        messages.success(request, 'Carga de Trabajo eliminada con éxito.')
-        return redirect('admins:carga_trabajo_list')
-    return render(request, 'admins/carga_trabajo_confirm_delete.html', {'carga': carga, 'title': f'Eliminar Carga de Trabajo {carga.id}'})
-
-
-
+        form = AdminServicioForm(request.POST, instance=servicio)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Servicio actualizado con éxito.')
+            return redirect('admins:admin_servicio_list')
+    else:
+        form = AdminServicioForm(instance=servicio)
+    return render(request, 'admins/admin_form.html', {'form': form, 'title': 'Editar Servicio'})
 
 @admin_required
-def reports(request):
-    from django.db.models import Sum, Count
-    from datetime import timedelta
-    from django.utils import timezone
+def admin_servicio_delete(request, pk):
+    servicio = get_object_or_404(Servicio, pk=pk)
+    if request.method == 'POST':
+        servicio.delete()
+        messages.success(request, 'Servicio eliminado con éxito.')
+        return redirect('admins:admin_servicio_list')
+    return render(request, 'perfiles/admin_confirm_delete.html', {'object': servicio, 'title': 'Eliminar Servicio'})
 
-    today = timezone.now().date()
-    last_week = today - timedelta(days=7)
+# CRUD para Empleado
+@admin_required
+def admin_empleado_list(request):
+    empleados = Empleado.objects.all()
+    return render(request, 'perfiles/admin_empleado_list.html', {'empleados': empleados})
 
-    # Ingresos por día (última semana)
-    ingresos_por_dia = Factura.objects.filter(
-        fecha_emision__gte=last_week,
-        estado='P'
-    ).values('fecha_emision').annotate(total=Sum('total')).order_by('fecha_emision')
+@admin_required
+def admin_empleado_create(request):
+    if request.method == 'POST':
+        form = AdminEmpleadoForm(request.POST)
+        if form.is_valid():
+            empleado = form.save()
+            messages.success(request, 'Empleado creado con éxito.')
+            return redirect('perfiles:admin_empleado_list')
+    else:
+        form = AdminEmpleadoForm()
+    return render(request, 'perfiles/admin_form.html', {'form': form, 'title': 'Crear Empleado'})
 
-    # Servicios por tipo de lavado
-    servicios_por_tipo = Servicio.objects.values('tipo_lavado__nombre').annotate(total=Count('id'))
+@admin_required
+def admin_empleado_edit(request, pk):
+    empleado = get_object_or_404(Empleado, pk=pk)
+    if request.method == 'POST':
+        form = AdminEmpleadoForm(request.POST, instance=empleado)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Empleado actualizado con éxito.')
+            return redirect('perfiles:admin_empleado_list')
+    else:
+        form = AdminEmpleadoForm(instance=empleado)
+    return render(request, 'perfiles/admin_form.html', {'form': form, 'title': 'Editar Empleado'})
 
-    context = {
-        'title': 'Informes Administrativos',
-        'ingresos_por_dia': ingresos_por_dia,
-        'servicios_por_tipo': servicios_por_tipo,
-    }
-    return render(request, 'admins/reports.html', context)
+@admin_required
+def admin_empleado_delete(request, pk):
+    empleado = get_object_or_404(Empleado, pk=pk)
+    if request.method == 'POST':
+        empleado.delete()
+        messages.success(request, 'Empleado eliminado con éxito.')
+        return redirect('perfiles:admin_empleado_list')
+    return render(request, 'perfiles/admin_confirm_delete.html', {'object': empleado, 'title': 'Eliminar Empleado'})
 
+# CRUD para EmployeeRequest
+@admin_required
+def admin_employee_request_list(request):
+    employee_requests = EmployeeRequest.objects.all()
+    return render(request, 'perfiles/admin_employee_request_list.html', {'employee_requests': employee_requests})
 
-class VehiculoListView(ListView):
-    model = Vehiculo
-    search_fields = ['placa', 'marca', 'modelo']
+@admin_required
+def admin_employee_request_create(request):
+    if request.method == 'POST':
+        form = AdminEmployeeRequestForm(request.POST)
+        if form.is_valid():
+            employee_request = form.save()
+            messages.success(request, 'Solicitud de empleado creada con éxito.')
+            return redirect('perfiles:admin_employee_request_list')
+    else:
+        form = AdminEmployeeRequestForm()
+    return render(request, 'perfiles/admin_form.html', {'form': form, 'title': 'Crear Solicitud de Empleado'})
 
-class VehiculoDetailView(DetailView):
-    model = Vehiculo
+@admin_required
+def admin_employee_request_edit(request, pk):
+    employee_request = get_object_or_404(EmployeeRequest, pk=pk)
+    if request.method == 'POST':
+        form = AdminEmployeeRequestForm(request.POST, instance=employee_request)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Solicitud de empleado actualizada con éxito.')
+            return redirect('perfiles:admin_employee_request_list')
+    else:
+        form = AdminEmployeeRequestForm(instance=employee_request)
+    return render(request, 'perfiles/admin_form.html', {'form': form, 'title': 'Editar Solicitud de Empleado'})
 
-class VehiculoCreateView(CreateView):
-    model = Vehiculo
-    fields = '__all__'
+@admin_required
+def admin_employee_request_delete(request, pk):
+    employee_request = get_object_or_404(EmployeeRequest, pk=pk)
+    if request.method == 'POST':
+        employee_request.delete()
+        messages.success(request, 'Solicitud de empleado eliminada con éxito.')
+        return redirect('perfiles:admin_employee_request_list')
+    return render(request, 'perfiles/admin_confirm_delete.html', {'object': employee_request, 'title': 'Eliminar Solicitud de Empleado'})
 
-class VehiculoUpdateView(UpdateView):
-    model = Vehiculo
-    fields = '__all__'
-
-class VehiculoDeleteView(DeleteView):
-    model = Vehiculo
+# Vista para Activity Logs
+@admin_required
+def admin_activity_log_list(request):
+    activity_logs = ActivityLog.objects.all().order_by('-timestamp')
+    return render(request, 'perfiles/admin_activity_log_list.html', {'activity_logs': activity_logs})

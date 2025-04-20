@@ -1,41 +1,42 @@
 <!DOCTYPE html>
-<html lang="es" class="light">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lavado de Vehículos Premium{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <style>
         :root {
-            --bg-light: linear-gradient(135deg, #E0F7FA, #BBDEFB);
-            --bg-dark: linear-gradient(135deg, #1A237E, #0D47A1);
-            --text-light: #0D47A1;
-            --text-dark: #E1F5FE;
-            --card-bg-light: rgba(255, 255, 255, 0.85);
-            --card-bg-dark: rgba(25, 42, 86, 0.85);
-            --primary: #0288D1;
-            --primary-dark: #01579B;
-            --secondary: #4CAF50;
-            --secondary-dark: #2E7D32;
-            --accent: #FFB300;
-            --accent-dark: #FF8F00;
-            --bubble-bg: rgba(255, 255, 255, 0.2);
+            --bg-light: linear-gradient(135deg, #F0F7FF, #D6EAF8);
+            --bg-dark: linear-gradient(135deg, #1E2A44, #0A1D37);
+            --text-light: #1E3A8A;
+            --text-dark: #F1F5F9;
+            --card-bg-light: rgba(255, 255, 255, 0.9);
+            --card-bg-dark: rgba(30, 41, 59, 0.9);
+            --primary: #3B82F6;
+            --primary-dark: #1E40AF;
+            --secondary: #10B981;
+            --secondary-dark: #047857;
+            --accent: #F59E0B;
+            --accent-dark: #B45309;
+            --bubble-bg: rgba(255, 255, 255, 0.3);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
         body {
             background: var(--bg-light);
-            background-attachment: fixed;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             color: var(--text-light);
-            position: relative;
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
         }
 
         body.dark {
@@ -45,38 +46,38 @@
 
         .bg-white {
             background-color: var(--card-bg-light);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
         }
 
         body.dark .bg-white {
             background-color: var(--card-bg-dark);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .bg-blue-50 { background-color: rgba(227, 242, 253, 0.8); }
-        body.dark .bg-blue-50 { background-color: rgba(30, 58, 138, 0.8); }
-        .bg-green-50 { background-color: rgba(232, 245, 233, 0.8); }
-        body.dark .bg-green-50 { background-color: rgba(26, 60, 52, 0.8); }
-        .bg-yellow-50 { background-color: rgba(255, 248, 225, 0.8); }
-        body.dark .bg-yellow-50 { background-color: rgba(76, 44, 0, 0.8); }
+        .bg-blue-50 { background-color: rgba(219, 234, 254, 0.9); }
+        body.dark .bg-blue-50 { background-color: rgba(30, 64, 175, 0.9); }
+        .bg-green-50 { background-color: rgba(209, 250, 229, 0.9); }
+        body.dark .bg-green-50 { background-color: rgba(6, 78, 59, 0.9); }
+        .bg-yellow-50 { background-color: rgba(254, 243, 199, 0.9); }
+        body.dark .bg-yellow-50 { background-color: rgba(120, 53, 15, 0.9); }
 
         .text-blue-600 { color: var(--primary); }
-        body.dark .text-blue-600 { color: #90CAF9; }
+        body.dark .text-blue-600 { color: #93C5FD; }
         .text-green-600 { color: var(--secondary); }
-        body.dark .text-green-600 { color: #A5D6A7; }
+        body.dark .text-green-600 { color: #6EE7B7; }
         .text-yellow-600 { color: var(--accent); }
-        body.dark .text-yellow-600 { color: #FFCA28; }
+        body.dark .text-yellow-600 { color: #FCD34D; }
 
-        /* Animaciones de gotas de agua */
+        /* Water Drops Animation */
         .water-drops {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            overflow: hidden;
             z-index: -1;
         }
 
@@ -84,59 +85,72 @@
             position: absolute;
             background: var(--bubble-bg);
             border-radius: 50%;
-            animation: float 15s infinite ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            animation: float 12s infinite ease-in-out;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
 
         body.dark .drop {
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
         }
 
         @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+            0% { transform: translateY(100vh) scale(0.8); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
         }
 
-        /* Efectos de navegación */
+        /* Navigation Styles */
         .nav-shadow {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transition: background 0.3s ease;
         }
 
-        .dropdown-menu {
-            border-radius: 10px;
+        body.dark .nav-shadow {
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 8px 16px;
+            border-radius: 8px;
             transition: all 0.3s ease;
-            transform-origin: top right;
-            transform: scale(0.95);
-            opacity: 0;
-            pointer-events: none;
         }
 
-        .dropdown-menu.show {
-            transform: scale(1);
-            opacity: 1;
-            pointer-events: auto;
+        .nav-item:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
         }
 
-        .dropdown-menu a {
-            transition: all 0.2s ease;
-            border-left: 0px solid transparent;
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
 
-        .dropdown-menu a:hover {
-            border-left: 4px solid var(--primary);
-            background-color: rgba(2, 136, 209, 0.1);
+        .nav-item:hover::after {
+            width: 50%;
         }
 
-        /* Botones con animación */
+        /* Button Styles */
         .btn-primary {
-            background-color: var(--primary);
-            transition: all 0.3s ease;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .btn-primary::after {
@@ -144,40 +158,40 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 100%;
+            width: 0;
             height: 0;
-            background-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.5s, height 0.5s;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-primary:hover::after {
-            transform: translate(-50%, -50%) scale(2);
-            height: 300%;
-            opacity: 0;
+            width: 200%;
+            height: 200%;
         }
 
-        /* Nuevas animaciones para tarjetas */
+        /* Card Animations */
         .card-hover {
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            border-radius: 16px;
         }
 
-        .card-hover::after {
+        .card-hover::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 4px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             transform: scaleX(0);
             transform-origin: left;
@@ -185,265 +199,327 @@
         }
 
         .card-hover:hover {
-            transform: translateY(-7px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-md);
         }
 
-        .card-hover:hover::after {
+        .card-hover:hover::before {
             transform: scaleX(1);
         }
 
-        /* Responsividad */
-        @media (max-width: 768px) {
-            .dropdown-menu {
-                width: 100vw;
-                right: -16px;
-                border-radius: 0;
-                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        body.dark ::-webkit-scrollbar-thumb {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .nav-items {
+                display: none;
+            }
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .mobile-menu-toggle {
+                display: none;
             }
         }
     </style>
 </head>
 <body class="min-h-screen">
-    <!-- Fondo animado de gotas de agua -->
+    <!-- Water Drops Background -->
     <div class="water-drops"></div>
 
-    <!-- Menú desplegable (solo para usuarios autenticados) -->
+    <!-- Navigation -->
     {% if user.is_authenticated %}
-    <nav class="bg-blue-600 bg-opacity-95 p-4 nav-shadow sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-white text-lg font-bold flex items-center">
-                <i class="fas fa-car-wash mr-2 animate-pulse"></i>
+    <nav class="nav-shadow sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="text-2xl font-bold flex items-center">
+                <i class="fas fa-car-wash mr-2 text-primary animate-pulse"></i>
                 <span class="hidden md:inline">Lavado Premium</span>
                 <span class="md:hidden">LavaPro</span>
             </div>
             <div class="flex items-center space-x-4">
-                <!-- Interruptor de tema -->
-                <button id="themeToggle" class="text-white focus:outline-none rounded-full bg-blue-700 p-2 hover:bg-blue-800 transition-all duration-300">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <div class="relative dropdown">
-                    <button id="dropdownButton" class="text-white focus:outline-none flex items-center space-x-2 bg-blue-700 px-3 py-2 rounded-lg hover:bg-blue-800 transition-all duration-300">
-                        <span class="hidden md:inline mr-2">Menú</span>
-                        <i class="fas fa-bars w-4 h-4"></i>
-                    </button>
-                    <div id="dropdownMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10">
-                        <div class="p-2 border-b border-gray-200">
-                            <a href="{% url 'perfiles:dashboard' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
-                                <span>Dashboard</span>
-                            </a>
-                            <a href="{% url 'perfiles:profile' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                <i class="fas fa-user mr-2 text-blue-600"></i>
-                                <span>Mi Perfil</span>
-                            </a>
-                            <!-- Opción del Panel de Admin solo para superusers o staff -->
-                            {% if user.is_superuser or user.is_staff %}
-                            <a href="{% url 'admins:dashboard' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                <i class="fas fa-cogs mr-2 text-blue-600"></i>
-                                <span>Panel de Admin</span>
-                            </a>
-                            {% endif %}
-                        </div>
-
-                        <!-- Sección de Administrador (solo para superusers o staff) -->
-                        {% if user.is_superuser or user.is_staff %}
-                        <div class="p-2 border-b border-gray-200">
-                            <p class="px-2 py-1 text-sm text-gray-500 font-semibold">Administrador</p>
-                            <div class="grid grid-cols-2 gap-1">
-                                <a href="{% url 'secciones:cliente-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-users mr-2 text-blue-600"></i>
-                                    <span>Clientes</span>
+                <!-- Navigation Items -->
+                <div class="nav-items flex items-center space-x-2">
+                    <a href="{% url 'perfiles:dashboard' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                    </a>
+                    <a href="{% url 'perfiles:profile' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-user mr-2"></i> Perfil
+                    </a>
+                    {% if user.is_superuser or user.is_staff %}
+                    <a href="{% url 'admins:admin_panel' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-cogs mr-2"></i> Admin
+                    </a>
+                    <div class="relative group">
+                        <button class="nav-item text-gray-800 dark:text-gray-200 flex items-center">
+                            <i class="fas fa-tools mr-2"></i> Gestión <i class="fas fa-chevron-down ml-1"></i>
+                        </button>
+                        <div class="absolute hidden group-hover:block bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-2 w-64 z-10">
+                            <div class="p-4 grid grid-cols-2 gap-2">
+                                <a href="{% url 'secciones:cliente-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-users mr-2 text-blue-600 dark:text-blue-400"></i> Clientes
                                 </a>
-                                <a href="{% url 'secciones:vehiculo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-car mr-2 text-blue-600"></i>
-                                    <span>Vehículos</span>
+                                <a href="{% url 'secciones:vehiculo-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-car mr-2 text-blue-600 dark:text-blue-400"></i> Vehículos
                                 </a>
-                                <a href="{% url 'secciones:empleado-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-user-tie mr-2 text-blue-600"></i>
-                                    <span>Empleados</span>
+                                <a href="{% url 'secciones:empleado-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-user-tie mr-2 text-blue-600 dark:text-blue-400"></i> Empleados
                                 </a>
-                                <a href="{% url 'secciones:jornada-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
-                                    <span>Jornadas</span>
+                                <a href="{% url 'secciones:jornada-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-calendar-alt mr-2 text-blue-600 dark:text-blue-400"></i> Jornadas
                                 </a>
-                                <a href="{% url 'secciones:turno-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-clock mr-2 text-blue-600"></i>
-                                    <span>Turnos</span>
+                                <a href="{% url 'secciones:turno-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-clock mr-2 text-blue-600 dark:text-blue-400"></i> Turnos
                                 </a>
-                                <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-pump-soap mr-2 text-blue-600"></i>
-                                    <span>T. Insumos</span>
+                                <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-pump-soap mr-2 text-blue-600 dark:text-blue-400"></i> T. Insumos
                                 </a>
-                                <a href="{% url 'secciones:insumo-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-spray-can mr-2 text-blue-600"></i>
-                                    <span>Insumos</span>
+                                <a href="{% url 'secciones:insumo-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-spray-can mr-2 text-blue-600 dark:text-blue-400"></i> Insumos
                                 </a>
-                                <a href="{% url 'secciones:inventario-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-warehouse mr-2 text-blue-600"></i>
-                                    <span>Inventarios</span>
+                                <a href="{% url 'secciones:inventario-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-warehouse mr-2 text-blue-600 dark:text-blue-400"></i> Inventarios
                                 </a>
                             </div>
-                            <div class="mt-2">
-                                <a href="{% url 'secciones:tipolavado-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-water mr-2 text-blue-600"></i>
-                                    <span>Tipos de Lavado</span>
+                            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                                <a href="{% url 'secciones:tipolavado-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-water mr-2 text-blue-600 dark:text-blue-400"></i> Tipos de Lavado
                                 </a>
-                                <a href="{% url 'secciones:servicio-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-concierge-bell mr-2 text-blue-600"></i>
-                                    <span>Servicios</span>
+                                <a href="{% url 'secciones:servicio-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-concierge-bell mr-2 text-blue-600 dark:text-blue-400"></i> Servicios
                                 </a>
-                                <a href="{% url 'secciones:factura-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-file-invoice-dollar mr-2 text-blue-600"></i>
-                                    <span>Facturas</span>
+                                <a href="{% url 'secciones:factura-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-file-invoice-dollar mr-2 text-blue-600 dark:text-blue-400"></i> Facturas
                                 </a>
-                                <a href="{% url 'secciones:cita-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
-                                    <span>Citas</span>
+                                <a href="{% url 'secciones:cita-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-calendar-check mr-2 text-blue-600 dark:text-blue-400"></i> Citas
                                 </a>
-                                <a href="{% url 'secciones:promocion-admin-list' %}" class="flex items-center p-2 rounded hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-percentage mr-2 text-blue-600"></i>
-                                    <span>Promociones</span>
+                                <a href="{% url 'secciones:promocion-admin-list' %}" class="flex items-center p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900">
+                                    <i class="fas fa-percentage mr-2 text-blue-600 dark:text-blue-400"></i> Promociones
                                 </a>
                             </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- Cerrar sesión -->
-                        <div class="p-2 border-t border-gray-200">
-                            <form method="post" action="{% url 'logout' %}" class="block">
-                                {% csrf_token %}
-                                <button type="submit" class="flex items-center p-2 w-full text-left rounded hover:bg-red-100 transition-all text-red-500">
-                                    <i class="fas fa-sign-out-alt mr-2"></i>
-                                    <span>Cerrar Sesión</span>
-                                </button>
-                            </form>
                         </div>
                     </div>
+                    {% endif %}
+                    <form method="post" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-item text-red-500 dark:text-red-400">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                        </button>
+                    </form>
                 </div>
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300">
+                    <i class="fas fa-moon text-gray-800 dark:text-gray-200"></i>
+                </button>
+                <!-- Mobile Menu Toggle -->
+                <button id="mobileMenuToggle" class="mobile-menu-toggle p-2 rounded-lg bg-primary text-white hover:bg-primary-dark">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden nav-shadow mt-2 p-4">
+            <div class="flex flex-col space-y-2">
+                <a href="{% url 'perfiles:dashboard' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </a>
+                <a href="{% url 'perfiles:profile' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-user mr-2"></i> Perfil
+                </a>
+                {% if user.is_superuser or user.is_staff %}
+                <a href="{% url  'admins:admin_panel' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-cogs mr-2"></i> Admin
+                </a>
+                <div class="flex flex-col space-y-2 pl-4">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold">Gestión</p>
+                    <a href="{% url 'secciones:cliente-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-users mr-2"></i> Clientes
+                    </a>
+                    <a href="{% url 'secciones:vehiculo-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-car mr-2"></i> Vehículos
+                    </a>
+                    <a href="{% url 'secciones:empleado-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-user-tie mr-2"></i> Empleados
+                    </a>
+                    <a href="{% url 'secciones:jornada-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-calendar-alt mr-2"></i> Jornadas
+                    </a>
+                    <a href="{% url 'secciones:turno-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-clock mr-2"></i> Turnos
+                    </a>
+                    <a href="{% url 'secciones:tipoinsumo-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-pump-soap mr-2"></i> T. Insumos
+                    </a>
+                    <a href="{% url 'secciones:insumo-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-spray-can mr-2"></i> Insumos
+                    </a>
+                    <a href="{% url 'secciones:inventario-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-warehouse mr-2"></i> Inventarios
+                    </a>
+                    <a href="{% url 'secciones:tipolavado-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-water mr-2"></i> Tipos de Lavado
+                    </a>
+                    <a href="{% url 'secciones:servicio-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-concierge-bell mr-2"></i> Servicios
+                    </a>
+                    <a href="{% url 'secciones:factura-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-file-invoice-dollar mr-2"></i> Facturas
+                    </a>
+                    <a href="{% url 'secciones:cita-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-calendar-check mr-2"></i> Citas
+                    </a>
+                    <a href="{% url 'secciones:promocion-admin-list' %}" class="nav-item text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-percentage mr-2"></i> Promociones
+                    </a>
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-item text-red-500 dark:text-red-400">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                    </button>
+                </form>
             </div>
         </div>
     </nav>
     {% endif %}
 
-    <!-- Contenido de la página -->
-    <div class="container mx-auto mt-8 px-4">
+    <!-- Main Content -->
+    <div class="container mx-auto mt-12 px-4">
         {% block content %}
-        <!-- Contenido predeterminado para visualización -->
-        <div class="max-w-6xl mx-auto">
-            <!-- Sección de portada -->
-            <div class="relative overflow-hidden rounded-2xl mb-12 bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-xl">
-                <div class="absolute top-0 right-0 w-full h-full opacity-10">
+        <div class="max-w-7xl mx-auto">
+            <!-- Hero Section -->
+            <div class="relative overflow-hidden rounded-2xl mb-16 bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-2xl">
+                <div class="absolute inset-0 opacity-15">
                     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
                         <path fill="white" d="M48.8,-64.2C63.5,-55.3,75.8,-42,79.9,-26.8C84,-11.5,79.9,5.8,72.7,20.1C65.5,34.5,55.2,45.9,42.5,55.5C29.9,65,14.9,72.7,-0.9,73.9C-16.7,75.1,-33.4,69.8,-46.1,59.6C-58.7,49.4,-67.2,34.3,-73,17.2C-78.8,0.1,-81.8,-19,-73.8,-31.6C-65.8,-44.2,-46.8,-50.3,-31.1,-58.9C-15.3,-67.5,-2.7,-78.7,12.3,-83.6C27.3,-88.5,54.6,-87.1,61.3,-76.6Z" transform="translate(100 100)" />
                     </svg>
                 </div>
-                <div class="px-8 py-16 md:py-20 md:px-12 relative z-10 flex flex-col md:flex-row items-center">
+                <div class="px-8 py-16 md:py-24 md:px-12 relative z-10 flex flex-col md:flex-row items-center">
                     <div class="md:w-1/2 mb-8 md:mb-0">
-                        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Brillo y Cuidado <span class="text-yellow-300">Premium</span> para tu Vehículo</h1>
-                        <p class="text-blue-100 text-lg mb-8">Ofrecemos el servicio de lavado más profesional y completo para que tu vehículo siempre luzca como nuevo.</p>
+                        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Cuidado <span class="text-yellow-300">Premium</span> para tu Vehículo</h1>
+                        <p class="text-blue-100 text-lg mb-8">Servicios de lavado profesional para que tu vehículo brille como nunca.</p>
                         <div class="flex flex-wrap gap-4">
-                            <a href="#" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg inline-flex items-center">
+                            <a href="#" class="btn-primary inline-flex items-center">
                                 <i class="fas fa-calendar-plus mr-2"></i> Reservar Cita
                             </a>
-                            <a href="#" class="bg-transparent hover:bg-blue-600 text-white border-2 border-white font-semibold py-3 px-6 rounded-lg transition duration-300 inline-flex items-center">
+                            <a href="#" class="bg-transparent hover:bg-blue-500 text-white border-2 border-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 inline-flex items-center">
                                 <i class="fas fa-info-circle mr-2"></i> Nuestros Servicios
                             </a>
                         </div>
                     </div>
                     <div class="md:w-1/2 flex justify-center">
-                        <div class="relative w-64 h-64 md:w-80 md:h-80">
-                            <div class="absolute inset-0 bg-blue-400 rounded-full opacity-20 animate-pulse"></div>
-                            <img src="/api/placeholder/400/400" alt="Car Wash" class="relative z-10 rounded-lg transform -rotate-6 shadow-xl">
+                        <div class="relative w-72 h-72 md:w-96 md:h-96">
+                            <div class="absolute inset-0 bg-blue-400 rounded-full opacity-25 animate-pulse"></div>
+                            <img src="/api/placeholder/400/400" alt="Car Wash" class="relative z-10 rounded-xl transform hover:scale-105 transition-transform duration-500 shadow-2xl">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Características destacadas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                <div class="card-hover bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <!-- Features Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                <div class="card-hover bg-white p-8 text-center">
+                    <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                         <i class="fas fa-tint text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2">Eco-Friendly</h3>
-                    <p class="text-gray-600">Productos biodegradables y técnicas de ahorro de agua para cuidar el medio ambiente.</p>
+                    <h3 class="text-xl font-semibold mb-3">Eco-Friendly</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Productos biodegradables y técnicas de ahorro de agua.</p>
                 </div>
-                <div class="card-hover bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="card-hover bg-white p-8 text-center">
+                    <div class="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                         <i class="fas fa-clock text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2">Servicio Rápido</h3>
-                    <p class="text-gray-600">Lavado completo en menos de 30 minutos sin comprometer la calidad.</p>
+                    <h3 class="text-xl font-semibold mb-3">Servicio Rápido</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Lavado completo en menos de 30 minutos.</p>
                 </div>
-                <div class="card-hover bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="bg-yellow-100 text-yellow-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="card-hover bg-white p-8 text-center">
+                    <div class="bg-yellow-100 text-yellow-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                         <i class="fas fa-star text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2">Acabado Premium</h3>
-                    <p class="text-gray-600">Detallado profesional para que tu vehículo brille como nuevo.</p>
+                    <h3 class="text-xl font-semibold mb-3">Acabado Premium</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Detallado profesional para un brillo impecable.</p>
                 </div>
             </div>
 
-            <!-- Servicios -->
-            <div class="mb-16">
-                <div class="text-center mb-10">
-                    <h2 class="text-3xl font-bold mb-4">Nuestros Servicios</h2>
-                    <p class="text-gray-600 max-w-2xl mx-auto">Desde lavados básicos hasta detallados completos para mantener tu vehículo impecable.</p>
+            <!-- Services Section -->
+            <div class="mb-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold mb-4">Nuestros Servicios</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Desde lavados básicos hasta detallados premium.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div class="card-hover bg-white rounded-xl overflow-hidden shadow-md">
-                        <div class="h-40 bg-blue-600 relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+                        <div class="h-48 bg-blue-600 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 opacity-90"></div>
                             <div class="absolute inset-0 flex items-center justify-center">
-                                <i class="fas fa-car-wash text-white text-5xl"></i>
+                                <i class="fas fa-car-wash text-white text-6xl"></i>
                             </div>
                         </div>
                         <div class="p-6">
                             <h3 class="text-xl font-semibold mb-2">Lavado Básico</h3>
-                            <p class="text-gray-600 mb-4">Lavado exterior, secado a mano y limpieza de llantas.</p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">Lavado exterior, secado y limpieza de llantas.</p>
                             <p class="text-blue-600 font-bold">Desde $15.000</p>
                         </div>
                     </div>
                     <div class="card-hover bg-white rounded-xl overflow-hidden shadow-md">
-                        <div class="h-40 bg-green-600 relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-green-400"></div>
+                        <div class="h-48 bg-green-600 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-green-400 opacity-90"></div>
                             <div class="absolute inset-0 flex items-center justify-center">
-                                <i class="fas fa-spray-can text-white text-5xl"></i>
+                                <i class="fas fa-spray-can text-white text-6xl"></i>
                             </div>
                         </div>
                         <div class="p-6">
                             <h3 class="text-xl font-semibold mb-2">Lavado Premium</h3>
-                            <p class="text-gray-600 mb-4">Lavado interior y exterior, aspirado y ceras protectoras.</p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">Lavado completo con ceras protectoras.</p>
                             <p class="text-green-600 font-bold">Desde $25.000</p>
                         </div>
                     </div>
                     <div class="card-hover bg-white rounded-xl overflow-hidden shadow-md">
-                        <div class="h-40 bg-yellow-500 relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-r from-yellow-500 to-yellow-300"></div>
+                        <div class="h-48 bg-yellow-500 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-yellow-500 to-yellow-300 opacity-90"></div>
                             <div class="absolute inset-0 flex items-center justify-center">
-                                <i class="fas fa-shield-alt text-white text-5xl"></i>
+                                <i class="fas fa-shield-alt text-white text-6xl"></i>
                             </div>
                         </div>
                         <div class="p-6">
                             <h3 class="text-xl font-semibold mb-2">Detallado Completo</h3>
-                            <p class="text-gray-600 mb-4">Tratamiento completo con pulido y protección cerámica.</p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">Pulido y protección cerámica premium.</p>
                             <p class="text-yellow-600 font-bold">Desde $45.000</p>
                         </div>
                     </div>
                 </div>
-                <div class="text-center mt-8">
-                    <a href="#" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-md">Ver todos los servicios</a>
+                <div class="text-center mt-10">
+                    <a href="#" class="btn-primary">Ver todos los servicios</a>
                 </div>
             </div>
 
-            <!-- Testimonios -->
-            <div class="mb-16 bg-white rounded-xl p-8 shadow-lg">
-                <div class="text-center mb-10">
-                    <h2 class="text-3xl font-bold mb-4">Lo que dicen nuestros clientes</h2>
-                    <p class="text-gray-600 max-w-2xl mx-auto">La satisfacción de nuestros clientes es nuestra prioridad.</p>
+            <!-- Testimonials Section -->
+            <div class="mb-20 bg-white rounded-xl p-10 shadow-lg">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold mb-4">Voces de Nuestros Clientes</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">La satisfacción de nuestros clientes es nuestro mayor orgullo.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div class="p-6 bg-blue-50 rounded-lg">
                         <div class="flex items-center mb-4">
                             <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mr-4">
@@ -456,7 +532,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="text-gray-600">"Servicio excelente, mi auto quedó como nuevo. ¡Volveré sin duda!"</p>
+                        <p class="text-gray-600 dark:text-gray-300">"Mi auto quedó impecable, ¡un servicio de primera!"</p>
                     </div>
                     <div class="p-6 bg-green-50 rounded-lg">
                         <div class="flex items-center mb-4">
@@ -470,7 +546,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="text-gray-600">"Atención puntual y productos de gran calidad. ¡Superó mis expectativas!"</p>
+                        <p class="text-gray-600 dark:text-gray-300">"Rápidos y profesionales, superaron mis expectativas."</p>
                     </div>
                     <div class="p-6 bg-yellow-50 rounded-lg">
                         <div class="flex items-center mb-4">
@@ -484,20 +560,20 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="text-gray-600">"El detallado completo transformó mi vehículo. ¡Increíble!"</p>
+                        <p class="text-gray-600 dark:text-gray-300">"El detallado completo es espectacular, ¡lo recomiendo!"</p>
                     </div>
                 </div>
             </div>
 
             <!-- Footer -->
-            <footer class="bg-blue-900 text-white mt-16 relative w-full">
+            <footer class="bg-blue-900 text-white mt-20 w-full">
                 <div class="container mx-auto px-4 py-12">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div>
                             <h3 class="text-xl font-bold mb-4 flex items-center">
                                 <i class="fas fa-car-wash mr-2"></i> Lavado Premium
                             </h3>
-                            <p class="text-blue-200 mb-4">Servicio de lavado y detallado de alta calidad para tu vehículo.</p>
+                            <p class="text-blue-200 mb-4">Cuidamos tu vehículo con servicios de alta calidad.</p>
                             <div class="flex space-x-4">
                                 <a href="#" class="text-white hover:text-blue-300 transition-colors"><i class="fab fa-facebook-f"></i></a>
                                 <a href="#" class="text-white hover:text-blue-300 transition-colors"><i class="fab fa-instagram"></i></a>
@@ -506,7 +582,7 @@
                             </div>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold mb-4">Enlaces rápidos</h3>
+                            <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
                             <ul class="space-y-2">
                                 <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Inicio</a></li>
                                 <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Servicios</a></li>
@@ -544,55 +620,79 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Toggle del menú desplegable
-            const dropdownButton = document.getElementById('dropdownButton');
-            const dropdownMenu = document.getElementById('dropdownMenu');
-            if (dropdownButton && dropdownMenu) {
-                dropdownButton.addEventListener('click', function() {
-                    dropdownMenu.classList.toggle('hidden');
-                    dropdownMenu.classList.toggle('show');
-                });
-                document.addEventListener('click', function(event) {
-                    if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                        dropdownMenu.classList.add('hidden');
-                        dropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-
-            // Toggle de tema claro/oscuro
+            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             const body = document.body;
             if (themeToggle) {
                 const darkMode = localStorage.getItem('darkMode') === 'true';
                 if (darkMode) {
                     body.classList.add('dark');
-                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    themeToggle.innerHTML = '<i class="fas fa-sun text-gray-200"></i>';
                 }
                 themeToggle.addEventListener('click', function() {
                     body.classList.toggle('dark');
                     const isDark = body.classList.contains('dark');
                     localStorage.setItem('darkMode', isDark);
-                    themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                    themeToggle.innerHTML = isDark ? '<i class="fas fa-sun text-gray-200"></i>' : '<i class="fas fa-moon text-gray-800"></i>';
+                });
+            }
+            
+             // Gestión del menú desplegable
+    const gestionButton = document.querySelector('.nav-item:has(.fa-tools)');
+    const gestionMenu = document.querySelector('.group .absolute');
+    
+    if (gestionButton && gestionMenu) {
+        // Control de clic para mostrar/ocultar el menú
+        gestionButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            gestionMenu.classList.toggle('hidden');
+        });
+        
+        // Cerrar el menú cuando se hace clic fuera
+        document.addEventListener('click', function(e) {
+            if (!gestionButton.contains(e.target) && !gestionMenu.contains(e.target)) {
+                gestionMenu.classList.add('hidden');
+            }
+        });
+        
+        // Soporte para tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !gestionMenu.classList.contains('hidden')) {
+                gestionMenu.classList.add('hidden');
+            }
+        });
+    }
+
+            // Mobile Menu Toggle
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenuToggle && mobileMenu) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuToggle.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
                 });
             }
 
-            // Animación de gotas de agua
+            // Water Drops Animation
             const waterDrops = document.querySelector('.water-drops');
             if (waterDrops) {
-                for (let i = 0; i < 20; i++) {
+                for (let i = 0; i < 25; i++) {
                     const drop = document.createElement('div');
                     drop.classList.add('drop');
-                    drop.style.width = Math.random() * 40 + 10 + 'px';
+                    drop.style.width = Math.random() * 30 + 10 + 'px';
                     drop.style.height = drop.style.width;
                     drop.style.left = Math.random() * 100 + '%';
-                    drop.style.animationDuration = Math.random() * 10 + 5 + 's';
-                    drop.style.animationDelay = Math.random() * 5 + 's';
+                    drop.style.animationDuration = Math.random() * 8 + 4 + 's';
+                    drop.style.animationDelay = Math.random() * 3 + 's';
                     waterDrops.appendChild(drop);
                 }
             }
 
-            // Notificaciones Toastify
+            // Toast Notifications
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('success')) {
                 Toastify({
@@ -601,7 +701,7 @@
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    backgroundColor: "linear-gradient(to right, #10B981, #34D399)",
                 }).showToast();
             }
             if (urlParams.has('error')) {
@@ -611,7 +711,7 @@
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    backgroundColor: "linear-gradient(to right, #EF4444, #F87171)",
                 }).showToast();
             }
         });

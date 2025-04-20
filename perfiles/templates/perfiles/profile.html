@@ -118,179 +118,220 @@
   tr:hover {
     background-color: #f9fafb;
   }
+  
+  /* Nuevos estilos para el layout horizontal */
+  .main-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .profile-section {
+    flex: 1;
+    min-width: 350px;
+  }
+  
+  .vehicles-section {
+    flex: 1;
+    min-width: 350px;
+  }
+  
+  /* Estilos responsivos */
+  @media (max-width: 768px) {
+    .main-layout {
+      flex-direction: column;
+    }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="profile-container bg-white rounded-xl shadow-xl w-full max-w-lg mx-auto overflow-hidden">
-  <!-- Encabezado del perfil con fondo degradado -->
-    <div class="welcome-banner mb-6">
-        <div class="welcome-badge"></div>
-            <div class="welcome-text">
-                <p class="text-lg font-medium" text align="center">
+<!-- Mensaje de éxito - Mostrado arriba en ambas configuraciones -->
+{% if messages %}
+  <div class="mb-6 w-full max-w-7xl mx-auto">
+    {% for message in messages %}
+      <div class="success-alert p-4 text-sm text-green-800 bg-green-100 rounded-lg flex items-center" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Banner de bienvenida - Arriba del todo para ambas secciones -->
+<div class="welcome-banner mb-6 w-full max-w-7xl mx-auto">
+  <div class="bg-white rounded-xl shadow-md p-4">
+    <div class="welcome-text">
+      <p class="text-lg font-medium text-center">
         <span class="welcome-emoji">👋</span>
         ¡Hola, <span class="welcome-name">{{ user.first_name|default:user.username }}</span>!
       </p>
     </div>
-    </div>
-  <!-- Contenido principal del perfil -->
-  <div class="p-8">
-    <!-- Mensaje de éxito -->
-    {% if messages %}
-      <div class="mb-6">
-        {% for message in messages %}
-          <div class="success-alert p-4 text-sm text-green-800 bg-green-100 rounded-lg flex items-center" role="alert">
+  </div>
+</div>
+
+<!-- Contenedor principal con layout horizontal -->
+<div class="main-layout">
+  <!-- SECCIÓN IZQUIERDA: PERFIL -->
+  <div class="profile-section">
+    <div class="profile-container bg-white rounded-xl shadow-xl overflow-hidden">
+      <div class="p-6">
+        <!-- Foto de perfil con efecto de cambio -->
+        <div class="flex justify-center mb-6">
+          <div class="photo-upload-container">
+            {% if user.profile.photo %}
+              <img src="{{ user.profile.photo.url }}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover ring-4 ring-blue-100">
+            {% else %}
+              <div class="w-full h-full rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center ring-4 ring-blue-100">
+                <span class="text-3xl font-semibold text-blue-500">{{ user.username|first|upper }}</span>
+              </div>
+            {% endif %}
+            <label for="{{ photo_form.photo.id_for_label }}" class="photo-overlay">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </label>
+          </div>
+        </div>
+
+        <!-- Formulario de perfil -->
+        <form method="post" enctype="multipart/form-data" class="space-y-5">
+          {% csrf_token %}
+          
+          <!-- Inputs ocultos para mantener la estructura -->
+          <input type="file" name="{{ photo_form.photo.name }}" id="{{ photo_form.photo.id_for_label }}" class="file-input-hidden">
+          
+          <!-- Campos del formulario con mejor estilo y animaciones -->
+          <div class="space-y-4">
+            
+            <!-- Campo: Username -->
+            <div>
+              <label for="{{ user_form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <input type="text" name="{{ user_form.username.name }}" id="{{ user_form.username.id_for_label }}"
+                      value="{{ user_form.username.value|default_if_none:'' }}"
+                      class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
+              </div>
+              {% if user_form.username.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ user_form.username.errors }}</p>
+              {% endif %}
+              <p class="text-gray-500 text-xs mt-1">Requerido. 150 caracteres o menos.</p>
+            </div>
+
+            <!-- Campo: Email -->
+            <div>
+              <label for="{{ user_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input type="email" name="{{ user_form.email.name }}" id="{{ user_form.email.id_for_label }}"
+                      value="{{ user_form.email.value|default_if_none:'' }}"
+                      class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
+              </div>
+              {% if user_form.email.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ user_form.email.errors }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Campo: First name -->
+            <div>
+              <label for="{{ user_form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <input type="text" name="{{ user_form.first_name.name }}" id="{{ user_form.first_name.id_for_label }}"
+                      value="{{ user_form.first_name.value|default_if_none:'' }}"
+                      class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
+              </div>
+              {% if user_form.first_name.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ user_form.first_name.errors }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Campo: Last name -->
+            <div>
+              <label for="{{ user_form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <input type="text" name="{{ user_form.last_name.name }}" id="{{ user_form.last_name.id_for_label }}"
+                      value="{{ user_form.last_name.value|default_if_none:'' }}"
+                      class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
+              </div>
+              {% if user_form.last_name.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ user_form.last_name.errors }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Botón de actualizar -->
+          <button type="submit" class="update-button w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            {{ message }}
+            Actualizar Perfil
+          </button>
+        </form>
+        
+        <!-- Sección adicional para mejorar la experiencia de usuario -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Acciones rápidas</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <a href="#" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg flex items-center transition duration-200 group">
+              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium text-gray-700">Mis Citas</p>
+                <p class="text-xs text-gray-500">Ver historial</p>
+              </div>
+            </a>
+            <a href="#" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg flex items-center transition duration-200 group">
+              <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 group-hover:bg-green-200 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium text-gray-700">Nueva Cita</p>
+                <p class="text-xs text-gray-500">Agendar lavado</p>
+              </div>
+            </a>
           </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <!-- Foto de perfil con efecto de cambio -->
-    <div class="flex justify-center mb-8">
-      <div class="photo-upload-container">
-        {% if user.profile.photo %}
-          <img src="{{ user.profile.photo.url }}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover ring-4 ring-blue-100">
-        {% else %}
-          <div class="w-full h-full rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center ring-4 ring-blue-100">
-            <span class="text-3xl font-semibold text-blue-500">{{ user.username|first|upper }}</span>
-          </div>
-        {% endif %}
-        <label for="{{ photo_form.photo.id_for_label }}" class="photo-overlay">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </label>
+        </div>
       </div>
     </div>
-
-    <!-- Formulario de perfil -->
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
-      {% csrf_token %}
-      
-      <!-- Inputs ocultos para mantener la estructura -->
-      <input type="file" name="{{ photo_form.photo.name }}" id="{{ photo_form.photo.id_for_label }}" class="file-input-hidden">
-      
-      <!-- Campos del formulario con mejor estilo y animaciones -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Campo: Username -->
-        <div class="col-span-2">
-          <label for="{{ user_form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <input type="text" name="{{ user_form.username.name }}" id="{{ user_form.username.id_for_label }}"
-                  value="{{ user_form.username.value|default_if_none:'' }}"
-                  class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
-          </div>
-          {% if user_form.username.errors %}
-            <p class="text-red-500 text-sm mt-1">{{ user_form.username.errors }}</p>
-          {% endif %}
-          <p class="text-gray-500 text-xs mt-1">Requerido. 150 caracteres o menos. Solo letras, dígitos y @/./+/-/_.</p>
-        </div>
-
-        <!-- Campo: Email -->
-        <div class="col-span-2">
-          <label for="{{ user_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <input type="email" name="{{ user_form.email.name }}" id="{{ user_form.email.id_for_label }}"
-                  value="{{ user_form.email.value|default_if_none:'' }}"
-                  class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
-          </div>
-          {% if user_form.email.errors %}
-            <p class="text-red-500 text-sm mt-1">{{ user_form.email.errors }}</p>
-          {% endif %}
-        </div>
-
-        <!-- Campo: First name -->
-        <div>
-          <label for="{{ user_form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <input type="text" name="{{ user_form.first_name.name }}" id="{{ user_form.first_name.id_for_label }}"
-                  value="{{ user_form.first_name.value|default_if_none:'' }}"
-                  class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
-          </div>
-          {% if user_form.first_name.errors %}
-            <p class="text-red-500 text-sm mt-1">{{ user_form.first_name.errors }}</p>
-          {% endif %}
-        </div>
-
-        <!-- Campo: Last name -->
-        <div>
-          <label for="{{ user_form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <input type="text" name="{{ user_form.last_name.name }}" id="{{ user_form.last_name.id_for_label }}"
-                  value="{{ user_form.last_name.value|default_if_none:'' }}"
-                  class="form-input pl-10 block w-full border border-gray-300 rounded-lg p-3 focus:outline-none">
-          </div>
-          {% if user_form.last_name.errors %}
-            <p class="text-red-500 text-sm mt-1">{{ user_form.last_name.errors }}</p>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Botón de actualizar -->
-      <button type="submit" class="update-button w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        Actualizar Perfil
-      </button>
-    </form>
-    
-    <!-- Sección adicional para mejorar la experiencia de usuario -->
-    <div class="mt-8 pt-6 border-t border-gray-200">
-      <h3 class="text-lg font-medium text-gray-900 mb-4">Acciones rápidas</h3>
-      <div class="grid grid-cols-2 gap-4">
-        <a href="#" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg flex items-center transition duration-200 group">
-          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Mis Citas</p>
-            <p class="text-xs text-gray-500">Ver historial</p>
-          </div>
-        </a>
-        <a href="#" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg flex items-center transition duration-200 group">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 group-hover:bg-green-200 transition duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-medium text-gray-700">Nueva Cita</p>
-            <p class="text-xs text-gray-500">Agendar lavado</p>
-          </div>
-        </a>
+  </div>
+  
+  <!-- SECCIÓN DERECHA: MIS VEHÍCULOS -->
+  <div class="vehicles-section">
+    <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+      <div class="p-6">
+        {% include 'perfiles/myvehiculos.html' %}
       </div>
     </div>
-
-      <!-- Incluir la plantilla myvehiculos.html -->
-      {% include 'perfiles/myvehiculos.html' %}
   </div>
 </div>
 

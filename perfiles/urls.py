@@ -9,9 +9,12 @@ from .views import (
 app_name = 'perfiles'
 
 urlpatterns = [
-    path('register/', register, name='register'),  # Eliminamos la ruta redundante ''
-    path('dashboard/', dashboard, name='dashboard'),
+    path('', dashboard, name='dashboard'),  # Ruta raíz
+    path('register/', register, name='register'),
     path('profile/', profile, name='profile'),
+    
+
+    
     # URLs de API (manteniendo las CBVs para Django REST Framework)
     path('api/profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/employee-request/create/', EmployeeRequestCreateView.as_view(), name='employee-request-create'),

@@ -1,0 +1,16 @@
+<!-- templates/perfiles/admin_confirm_delete.html -->
+{% extends 'admins/admin_base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h2 class="text-3xl font-bold text-blue-700 mb-6">{{ title }}</h2>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <p class="text-lg text-gray-700 mb-4">¿Estás seguro de que deseas eliminar este registro: <strong>{{ object }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="inline-block bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">Eliminar</button>
+            <a href="{% url 'admins:admin_panel' %}" class="inline-block bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 ml-4">Cancelar</a>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!-- templates/perfiles/admin_empleado_list.html -->
+{% extends 'admins/admin_base.html' %}
+
+{% block title %}Lista de Empleados{% endblock %}
+
+{% block content %}
+    <h2 class="text-3xl font-bold text-blue-700 mb-6">Lista de Empleados</h2>
+    <a href="{% url 'perfiles:admin_empleado_create' %}" class="inline-block bg-blue-600 text-white py-2 px-4 rounded-lg mb-4 hover:bg-blue-700">Crear Nuevo Empleado</a>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for empleado in empleados %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ empleado.usuario.username }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ empleado.nombre }} {{ empleado.apellido }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ empleado.rol }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ empleado.estado }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'perfiles:admin_empleado_edit' empleado.pk %}" class="text-blue-600 hover:underline">Editar</a>
+                            <a href="{% url 'perfiles:admin_empleado_delete' empleado.pk %}" class="text-red-600 hover:underline ml-4">Eliminar</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            No hay empleados registrados.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

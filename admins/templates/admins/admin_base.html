@@ -1,0 +1,46 @@
+<!-- templates/perfiles/admin_base.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Superpanel Administrativo{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100">
+    <!-- Barra de Navegación -->
+    <nav class="bg-blue-700 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Superpanel Administrativo</h1>
+            <div class="space-x-4">
+                <a href="{% url 'admins:admin_panel' %}" class="hover:underline">Dashboard</a>
+                <a href="{% url 'admins:admin_user_list' %}" class="hover:underline">Usuarios</a>
+                <a href="{% url 'admins:admin_userprofile_list' %}" class="hover:underline">Roles</a>
+                <a href="{% url 'admins:admin_cliente_list' %}" class="hover:underline">Clientes</a>
+                <a href="{% url 'admins:admin_vehiculo_list' %}" class="hover:underline">Vehículos</a>
+                <a href="{% url 'admins:admin_cita_list' %}" class="hover:underline">Citas</a>
+                <a href="{% url 'admins:admin_servicio_list' %}" class="hover:underline">Servicios</a>
+                <a href="{% url 'admins:admin_empleado_list' %}" class="hover:underline">Empleados</a>
+                <a href="{% url 'admins:admin_employee_request_list' %}" class="hover:underline">Solicitudes</a>
+                <a href="{% url 'admins:admin_activity_log_list' %}" class="hover:underline">Registros</a>
+                <a href="{% url 'perfiles:dashboard' %}" class="hover:underline">Menu principal</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido -->
+    <div class="container mx-auto p-6">
+        <!-- Mensajes -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 text-sm {% if message.tags == 'success' %}text-green-700 bg-green-100{% else %}text-red-700 bg-red-100{% endif %} rounded-lg">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

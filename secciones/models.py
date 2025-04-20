@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 # Models
 class Cliente(models.Model):
-    nombre = models.CharField(max_length=50)
+    nombre = models.CharField(max_length=50) 
     apellido = models.CharField(max_length=50)
     identificacion = models.CharField(max_length=20, unique=True)
     telefono = models.CharField(max_length=15, blank=True)
@@ -212,21 +212,35 @@ class TipoLavado(models.Model):
         return f"{self.nombre} - {self.costo} ({self.estado})"
 
 
+
+class Cita(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
+    fecha = models.DateField()
+    hora = models.TimeField()
+    tipo_lavado = models.ForeignKey(TipoLavado, on_delete=models.CASCADE)
+    ESTADOS = [('P', 'Pendiente'), ('C', 'Confirmada'), ('X', 'Cancelada')]
+    estado = models.CharField(max_length=1, choices=ESTADOS, default='P')
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cita {self.cliente.nombre} - {self.vehiculo.placa} ({self.fecha} {self.hora})"
+
+
 class Servicio(models.Model):
     ESTADO_CHOICES = [
         ('P', 'Pendiente'),
         ('E', 'En Proceso'),
         ('C', 'Completado'),
     ]
-    fecha = models.DateField()
-    emp_recibe = models.ForeignKey(
-        Empleado, on_delete=models.CASCADE, related_name="recibe_servicios")
-    emp_lava = models.ForeignKey(
-        Empleado, on_delete=models.CASCADE, related_name="lava_servicios")
+    cita = models.ForeignKey(Cita, on_delete=models.CASCADE, related_name='servicios',  null=True, blank=True)  # Nueva relación
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
-    tipo_lavado = models.ForeignKey(TipoLavado, on_delete=models.CASCADE)
-    hora_recibe = models.TimeField()
-    hora_entrega = models.TimeField()
+    emp_recibe = models.ForeignKey(Empleado, on_delete=models.CASCADE, related_name="recibe_servicios")
+    emp_lava = models.ForeignKey(Empleado, on_delete=models.CASCADE, related_name="lava_servicios")
+    hora_recibe = models.TimeField() 
+    hora_entrega = models.TimeField()  # Mantener solo la hora de entrega
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.CharField(max_length=1, choices=ESTADO_CHOICES, default='P')
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -234,7 +248,7 @@ class Servicio(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.fecha} - {self.vehiculo.placa} ({self.tipo_lavado.nombre}) - {self.estado}"
+        return f"Servicio para {self.cita.vehiculo.placa} ({self.cita.tipo_lavado.nombre}) - {self.estado}"
 
 
 class ConsumoInsumo(models.Model):
@@ -263,21 +277,6 @@ class Factura(models.Model):
     def __str__(self):
         return f"Factura {self.id} - {self.cliente.nombre} ({self.total})"
 
-
-class Cita(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
-    fecha = models.DateField()
-    hora = models.TimeField()
-    tipo_lavado = models.ForeignKey(TipoLavado, on_delete=models.CASCADE)
-    ESTADOS = [('P', 'Pendiente'), ('C', 'Confirmada'), ('X', 'Cancelada')]
-    estado = models.CharField(max_length=1, choices=ESTADOS, default='P')
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Cita {self.cliente.nombre} - {self.vehiculo.placa} ({self.fecha} {self.hora})"
 
 
 class Promocion(models.Model):

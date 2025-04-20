@@ -1,56 +1,279 @@
-<!-- templates/perfiles/myvehiculos.html -->
-<div class="mt-8 pt-6 border-t border-gray-200">
-    <h3 class="text-lg font-medium text-gray-900 mb-4">Mis Vehículos</h3>
-  
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Vehículos</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    .card-shadow {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .vehicle-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .vehicle-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .form-control {
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .form-control:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+    .btn-transition {
+      transition: all 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      width: 120px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    .slide-in {
+      animation: slideIn 0.5s forwards;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div class="bg-white rounded-xl shadow-lg p-6 animate__animated animate__fadeIn">
+    <div class="flex justify-between items-center mb-8 border-b pb-4">
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-car text-indigo-600 text-3xl"></i>
+        <h2 class="text-2xl font-bold text-gray-800">Mis Vehículos</h2>
+      </div>
+      <div class="bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full text-sm font-medium fade-in">
+        {% if vehiculos|length == 1 %}
+          1 vehículo registrado
+        {% else %}
+          {{ vehiculos|length }} vehículos registrados
+        {% endif %}
+      </div>
+    </div>
+
     <!-- Mensaje si no se pueden agregar más vehículos -->
     {% if not puede_agregar %}
-      <p class="text-red-500 text-sm mb-4">Has alcanzado el límite de 10 vehículos registrados.</p>
-    {% endif %}
-  
-    <!-- Formulario para agregar/editar vehículo -->
-    {% if puede_agregar %}
-      <form method="post" class="mb-6">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="create">
-        <input type="hidden" name="vehiculo_id" value="">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {% for field in vehiculo_form %}
-            <div>
-              <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
-              {{ field }}
-              {% if field.errors %}
-                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
-              {% endif %}
-            </div>
-          {% endfor %}
+      <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 animate__animated animate__fadeIn">
+        <div class="flex items-center">
+          <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+          <p class="text-red-700">Has alcanzado el límite de 10 vehículos registrados.</p>
         </div>
-        <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+      </div>
+    {% endif %}
+
+    <!-- Botón para mostrar/ocultar formulario -->
+    {% if puede_agregar %}
+      <button id="toggleFormBtn" class="mb-6 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-all duration-300 flex items-center btn-transition">
+        <i class="fas fa-plus-circle mr-2"></i>
+        <span id="toggleBtnText">Agregar Nuevo Vehículo</span>
+      </button>
+    {% endif %}
+
+    <!-- Formulario para agregar/editar vehículo (inicialmente oculto) -->
+    {% if puede_agregar %}
+      <div id="vehicleForm" class="mb-8 hidden">
+        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 card-shadow fade-in">
+          <h3 id="formTitle" class="text-lg font-semibold text-gray-800 mb-4">Agregar Nuevo Vehículo</h3>
+          
+          <form id="vehiculoForm" method="post" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <input type="hidden" name="vehiculo_id" value="">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {% for field in vehiculo_form %}
+              <div class="slide-in">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                <div class="relative">
+                  {{ field }}
+                  {% if field.help_text %}
+                    <div class="tooltip">
+                      <i class="fas fa-question-circle text-gray-400 ml-1"></i>
+                      <span class="tooltip-text">{{ field.help_text }}</span>
+                    </div>
+                  {% endif %}
+                </div>
+                {% if field.errors %}
+                  <p class="text-red-500 text-sm mt-1 animate__animated animate__headShake">{{ field.errors }}</p>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+              <button type="button" id="cancelBtn" class="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 btn-transition">
+                <i class="fas fa-times mr-2"></i>Cancelar
+              </button>
+              <button type="submit" id="submitBtn" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 btn-transition flex items-center">
+                <i class="fas fa-plus-circle mr-2"></i>
+                <span id="submitBtnText">Agregar Vehículo</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Búsqueda y filtros -->
+    <div class="mb-6 fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="w-full md:w-64 mb-4 md:mb-0">
+          <div class="relative">
+            <input id="vehicleSearch" type="text" placeholder="Buscar vehículo..." class="form-control w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300">
+            <div class="absolute left-3 top-2.5 text-gray-400">
+              <i class="fas fa-search"></i>
+            </div>
+          </div>
+        </div>
+        <div class="flex space-x-2">
+          <select id="filterType" class="form-control rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            <option value="">Filtrar por tipo</option>
+            <option value="Automóvil">Automóvil</option>
+            <option value="SUV">SUV</option>
+            <option value="Camioneta">Camioneta</option>
+            <option value="Motocicleta">Motocicleta</option>
+          </select>
+          <button id="resetFilters" class="bg-gray-200 text-gray-700 py-2 px-3 rounded-md hover:bg-gray-300 btn-transition">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista de tarjetas de vehículos (vista predeterminada) -->
+    <div id="cardView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      {% for vehiculo in vehiculos %}
+      <div class="vehicle-card bg-white rounded-xl border border-gray-200 overflow-hidden card-shadow fade-in" data-vehicle-type="{{ vehiculo.tipo }}" data-vehicle-id="{{ vehiculo.id }}">
+        <div class="p-4 border-b bg-gradient-to-r from-indigo-500 to-purple-600">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-white">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h3>
+            <span class="bg-white text-indigo-700 px-2 py-1 rounded-full text-xs font-medium">{{ vehiculo.tipo }}</span>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center mb-3">
+            <i class="fas fa-car-side text-indigo-500 mr-2 w-6"></i>
+            <span class="text-gray-700">{{ vehiculo.tamanio }}</span>
+          </div>
+          <div class="flex items-center mb-3">
+            <i class="fas fa-palette text-indigo-500 mr-2 w-6"></i>
+            <span class="text-gray-700">{{ vehiculo.color }}</span>
+          </div>
+          <div class="flex items-center mb-3">
+            <i class="fas fa-id-card text-indigo-500 mr-2 w-6"></i>
+            <span class="text-gray-700">{{ vehiculo.placa }}</span>
+          </div>
+          {% if vehiculo.descripcion %}
+          <div class="flex items-start mb-3">
+            <i class="fas fa-info-circle text-indigo-500 mr-2 w-6 mt-1"></i>
+            <span class="text-gray-700">{{ vehiculo.descripcion }}</span>
+          </div>
+          {% endif %}
+        </div>
+        <div class="bg-gray-50 px-4 py-3 flex justify-end space-x-3">
+          <button 
+            onclick="editVehicle({{ vehiculo.id }}, '{{ vehiculo.tipo }}', '{{ vehiculo.tamanio }}', '{{ vehiculo.marca }}', '{{ vehiculo.modelo }}', '{{ vehiculo.descripcion }}', '{{ vehiculo.placa }}', '{{ vehiculo.color }}')" 
+            class="text-blue-600 hover:text-blue-800 btn-transition tooltip">
+            <i class="fas fa-edit"></i>
+            <span class="tooltip-text">Editar</span>
+          </button>
+          <form method="post" class="inline" onsubmit="return confirmDelete(event)">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="vehiculo_id" value="{{ vehiculo.id }}">
+            <button type="submit" class="text-red-600 hover:text-red-800 btn-transition tooltip">
+              <i class="fas fa-trash-alt"></i>
+              <span class="tooltip-text">Eliminar</span>
+            </button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-span-3 py-16 flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
+        <div class="text-gray-400 mb-4">
+          <i class="fas fa-car-crash text-6xl"></i>
+        </div>
+        <h3 class="text-xl font-medium text-gray-500 mb-2">No tienes vehículos registrados</h3>
+        <p class="text-gray-400 mb-4">Agrega tu primer vehículo para comenzar</p>
+        {% if puede_agregar %}
+        <button id="emptyStateAddBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-all duration-300 flex items-center">
+          <i class="fas fa-plus-circle mr-2"></i>
           Agregar Vehículo
         </button>
-      </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Botones para cambiar vista -->
+    {% if vehiculos %}
+    <div class="flex justify-center space-x-4 mb-6 fade-in">
+      <button id="showCardView" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 btn-transition flex items-center">
+        <i class="fas fa-th-large mr-2"></i>
+        Vista Tarjetas
+      </button>
+      <button id="showTableView" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 btn-transition flex items-center">
+        <i class="fas fa-table mr-2"></i>
+        Vista Tabla
+      </button>
+    </div>
     {% endif %}
-  
-    <!-- Tabla de vehículos -->
-    <div class="overflow-x-auto">
+
+    <!-- Vista de tabla de vehículos (inicialmente oculta) -->
+    <div id="tableView" class="overflow-x-auto hidden fade-in">
       <table class="min-w-full bg-white border rounded-lg">
-        <thead class="bg-gray-100">
+        <thead class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
           <tr>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Tipo</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Tamaño</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Marca</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Modelo</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Descripción</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Placa</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Color</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Acciones</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Tipo</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Tamaño</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Marca</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Modelo</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Descripción</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Placa</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Color</th>
+            <th class="py-3 px-4 text-left text-sm font-medium">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {% for vehiculo in vehiculos %}
-            <tr class="border-t">
+            <tr class="border-t hover:bg-gray-50 transition-colors duration-150" data-vehicle-type="{{ vehiculo.tipo }}">
               <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.tipo }}</td>
               <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.tamanio }}</td>
               <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.marca }}</td>
@@ -58,61 +281,288 @@
               <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.descripcion }}</td>
               <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.placa }}</td>
               <td class="py-3 px-4 text-sm text-gray-600">{{ vehiculo.color }}</td>
-              <td class="py-3 px-4 flex space-x-2">
+              <td class="py-3 px-4 flex space-x-3">
                 <!-- Botón para editar -->
-                <button onclick="editVehicle({{ vehiculo.id }}, '{{ vehiculo.tipo }}', '{{ vehiculo.tamanio }}', '{{ vehiculo.marca }}', '{{ vehiculo.modelo }}', '{{ vehiculo.descripcion }}', '{{ vehiculo.placa }}', '{{ vehiculo.color }}')" class="text-blue-600 hover:text-blue-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
+                <button 
+                  onclick="editVehicle({{ vehiculo.id }}, '{{ vehiculo.tipo }}', '{{ vehiculo.tamanio }}', '{{ vehiculo.marca }}', '{{ vehiculo.modelo }}', '{{ vehiculo.descripcion }}', '{{ vehiculo.placa }}', '{{ vehiculo.color }}')" 
+                  class="text-blue-600 hover:text-blue-800 btn-transition tooltip">
+                  <i class="fas fa-edit"></i>
+                  <span class="tooltip-text">Editar</span>
                 </button>
                 <!-- Botón para eliminar -->
-                <form method="post" onsubmit="return confirm('¿Estás seguro de que deseas marcar este vehículo como inactivo?');">
+                <form method="post" class="inline" onsubmit="return confirmDelete(event)">
                   {% csrf_token %}
                   <input type="hidden" name="action" value="delete">
                   <input type="hidden" name="vehiculo_id" value="{{ vehiculo.id }}">
-                  <button type="submit" class="text-red-600 hover:text-red-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                  <button type="submit" class="text-red-600 hover:text-red-800 btn-transition tooltip">
+                    <i class="fas fa-trash-alt"></i>
+                    <span class="tooltip-text">Eliminar</span>
                   </button>
                 </form>
               </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="8" class="py-3 px-4 text-sm text-gray-500 text-center">No tienes vehículos registrados.</td>
+              <td colspan="8" class="py-12 px-4 text-center text-gray-500">
+                <div class="flex flex-col items-center">
+                  <i class="fas fa-car-crash text-4xl mb-3"></i>
+                  <p>No tienes vehículos registrados.</p>
+                </div>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <!-- Mensaje de confirmación -->
+    <div id="confirmationMessage" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg hidden animate__animated animate__fadeInUp">
+      <div class="flex items-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="confirmationText">Operación completada con éxito</span>
+      </div>
+    </div>
   </div>
-  
-  <!-- Script para la interactividad -->
-  <script>
-    function editVehicle(id, tipo, tamanio, marca, modelo, descripcion, placa, color) {
-      // Llenar el formulario con los datos del vehículo para edición
-      document.querySelector('input[name="action"]').value = 'update';
-      document.querySelector('input[name="vehiculo_id"]').value = id;
-  
-      // Llenar los campos del formulario
-      document.querySelector('select[name="tipo"]').value = tipo;
-      document.querySelector('select[name="tamanio"]').value = tamanio;
-      document.querySelector('input[name="marca"]').value = marca;
-      document.querySelector('input[name="modelo"]').value = modelo;
-      document.querySelector('input[name="descripcion"]').value = descripcion;
-      document.querySelector('input[name="placa"]').value = placa;
-      document.querySelector('input[name="color"]').value = color;
-  
-      // Cambiar el texto del botón
-      const submitButton = document.querySelector('button[type="submit"]');
-      submitButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        Guardar Cambios
-      `;
-      submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
-      submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+</div>
+
+<script>
+  // Variables globales
+  let isEditing = false;
+  const vehicleForm = document.getElementById('vehicleForm');
+  const toggleFormBtn = document.getElementById('toggleFormBtn');
+  const formTitle = document.getElementById('formTitle');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitBtnText = document.getElementById('submitBtnText');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const toggleBtnText = document.getElementById('toggleBtnText');
+  const cardView = document.getElementById('cardView');
+  const tableView = document.getElementById('tableView');
+  const showCardViewBtn = document.getElementById('showCardView');
+  const showTableViewBtn = document.getElementById('showTableView');
+  const vehicleSearch = document.getElementById('vehicleSearch');
+  const filterType = document.getElementById('filterType');
+  const resetFilters = document.getElementById('resetFilters');
+
+  // Si existe el botón en el estado vacío
+  const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
+  if (emptyStateAddBtn) {
+    emptyStateAddBtn.addEventListener('click', toggleForm);
+  }
+
+  // Función para alternar la visibilidad del formulario
+  function toggleForm() {
+    if (vehicleForm.classList.contains('hidden')) {
+      // Mostrar formulario
+      vehicleForm.classList.remove('hidden');
+      toggleBtnText.textContent = 'Ocultar Formulario';
+      toggleFormBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+      toggleFormBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+      toggleFormBtn.querySelector('i').classList.remove('fa-plus-circle');
+      toggleFormBtn.querySelector('i').classList.add('fa-minus-circle');
+      
+      // Scroll suave hacia el formulario
+      vehicleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Ocultar formulario
+      vehicleForm.classList.add('hidden');
+      toggleBtnText.textContent = 'Agregar Nuevo Vehículo';
+      toggleFormBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+      toggleFormBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+      toggleFormBtn.querySelector('i').classList.remove('fa-minus-circle');
+      toggleFormBtn.querySelector('i').classList.add('fa-plus-circle');
+      
+      // Resetear el formulario si estábamos editando
+      if (isEditing) {
+        resetForm();
+      }
     }
-  </script>
+  }
+
+  // Agregar event listeners
+  if (toggleFormBtn) {
+    toggleFormBtn.addEventListener('click', toggleForm);
+  }
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      if (isEditing) {
+        resetForm();
+      }
+      toggleForm();
+    });
+  }
+
+  // Función para editar vehículo
+  function editVehicle(id, tipo, tamanio, marca, modelo, descripcion, placa, color) {
+    // Mostrar el formulario si está oculto
+    if (vehicleForm.classList.contains('hidden')) {
+      toggleForm();
+    }
+    
+    // Llenar el formulario con los datos del vehículo para edición
+    document.querySelector('input[name="action"]').value = 'update';
+    document.querySelector('input[name="vehiculo_id"]').value = id;
+  
+    // Llenar los campos del formulario
+    document.querySelector('select[name="tipo"]').value = tipo;
+    document.querySelector('select[name="tamanio"]').value = tamanio;
+    document.querySelector('input[name="marca"]').value = marca;
+    document.querySelector('input[name="modelo"]').value = modelo;
+    document.querySelector('input[name="descripcion"]').value = descripcion;
+    document.querySelector('input[name="placa"]').value = placa;
+    document.querySelector('input[name="color"]').value = color;
+  
+    // Cambiar textos para indicar edición
+    formTitle.textContent = 'Editar Vehículo';
+    submitBtnText.textContent = 'Guardar Cambios';
+    submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+    submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+    submitBtn.querySelector('i').classList.remove('fa-plus-circle');
+    submitBtn.querySelector('i').classList.add('fa-save');
+    
+    // Indicar que estamos en modo edición
+    isEditing = true;
+    
+    // Scroll suave hacia el formulario
+    vehicleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Función para resetear el formulario
+  function resetForm() {
+    // Resetear campos
+    document.querySelector('input[name="action"]').value = 'create';
+    document.querySelector('input[name="vehiculo_id"]').value = '';
+    document.getElementById('vehiculoForm').reset();
+    
+    // Resetear textos
+    formTitle.textContent = 'Agregar Nuevo Vehículo';
+    submitBtnText.textContent = 'Agregar Vehículo';
+    submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+    submitBtn.querySelector('i').classList.remove('fa-save');
+    submitBtn.querySelector('i').classList.add('fa-plus-circle');
+    
+    // Ya no estamos en modo edición
+    isEditing = false;
+  }
+
+  // Función para confirmar eliminación
+  function confirmDelete(event) {
+    return confirm('¿Estás seguro de que deseas marcar este vehículo como inactivo?');
+  }
+
+  // Cambio de vistas (tarjetas/tabla)
+  if (showCardViewBtn && showTableViewBtn) {
+    showCardViewBtn.addEventListener('click', function() {
+      cardView.classList.remove('hidden');
+      tableView.classList.add('hidden');
+      showCardViewBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+      showCardViewBtn.classList.add('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+      showTableViewBtn.classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+      showTableViewBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+    });
+    
+    showTableViewBtn.addEventListener('click', function() {
+      cardView.classList.add('hidden');
+      tableView.classList.remove('hidden');
+      showCardViewBtn.classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+      showCardViewBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+      showTableViewBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+      showTableViewBtn.classList.add('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+    });
+  }
+
+  // Búsqueda y filtrado
+  if (vehicleSearch) {
+    vehicleSearch.addEventListener('input', filterVehicles);
+  }
+  
+  if (filterType) {
+    filterType.addEventListener('change', filterVehicles);
+  }
+  
+  if (resetFilters) {
+    resetFilters.addEventListener('click', function() {
+      vehicleSearch.value = '';
+      filterType.value = '';
+      filterVehicles();
+    });
+  }
+
+  function filterVehicles() {
+    const searchTerm = vehicleSearch.value.toLowerCase();
+    const typeFilter = filterType.value;
+    
+    // Seleccionar todos los elementos de vehículos (en ambas vistas)
+    const cardElements = document.querySelectorAll('#cardView .vehicle-card');
+    const tableRows = document.querySelectorAll('#tableView tbody tr');
+    
+    // Filtrar tarjetas
+    cardElements.forEach(card => {
+      const cardContent = card.textContent.toLowerCase();
+      const cardType = card.getAttribute('data-vehicle-type');
+      const matchesSearch = cardContent.includes(searchTerm);
+      const matchesType = !typeFilter || cardType === typeFilter;
+      
+      if (matchesSearch && matchesType) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    // Filtrar filas de tabla
+    tableRows.forEach(row => {
+      // Saltar la fila de "no hay vehículos"
+      if (!row.getAttribute('data-vehicle-type')) return;
+      
+      const rowContent = row.textContent.toLowerCase();
+      const rowType = row.getAttribute('data-vehicle-type');
+      const matchesSearch = rowContent.includes(searchTerm);
+      const matchesType = !typeFilter || rowType === typeFilter;
+      
+      if (matchesSearch && matchesType) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  // Mostrar mensaje de confirmación
+  function showConfirmation(message) {
+    const confirmationMessage = document.getElementById('confirmationMessage');
+    const confirmationText = document.getElementById('confirmationText');
+    
+    confirmationText.textContent = message;
+    confirmationMessage.classList.remove('hidden');
+    
+    setTimeout(() => {
+      confirmationMessage.classList.add('animate__fadeOutDown');
+      setTimeout(() => {
+        confirmationMessage.classList.remove('animate__fadeOutDown');
+        confirmationMessage.classList.add('hidden');
+      }, 500);
+    }, 3000);
+  }
+
+  // Si hay un mensaje de éxito en la URL (ej. después de un POST exitoso)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('success')) {
+    const action = urlParams.get('action');
+    let message = 'Operación completada con éxito';
+    
+    if (action === 'create') {
+      message = 'Vehículo agregado con éxito';
+    } else if (action === 'update') {
+      message = 'Vehículo actualizado con éxito';
+    } else if (action === 'delete') {
+      message = 'Vehículo eliminado con éxito';
+    }
+    
+    showConfirmation(message);
+  }
+</script>
+
+</body>
+</html>
